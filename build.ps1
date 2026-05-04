@@ -75,7 +75,7 @@ if ($Compiler -eq 'MSVC' -or $Compiler -eq 'Clang') {
   # Project sources only (src/); third-party will be added as needed
   $files = @(Get-ChildItem -Path (Join-Path $PWD 'src') -Recurse -Filter *.c | ForEach-Object { $_.FullName })
   $includes = ''
-  $defines = '/D _CRT_SECURE_NO_WARNINGS /D _WINSOCK_DEPRECATED_NO_WARNINGS'
+  $defines = '/D _CRT_SECURE_NO_WARNINGS'
   $cxxflags = ''
   $linkopts = ''
   $out = ''
@@ -195,9 +195,9 @@ if ($Compiler -eq 'MSVC' -or $Compiler -eq 'Clang') {
     if (-not (Test-Path $vswhere)) {
       Write-Error "Compiler '$cc' not found and 'vswhere.exe' is missing. Open the 'Developer Command Prompt for VS' and run this script."
     }
-    $installPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Workload.VCTools -property installationPath
+    $installPath = & $vswhere -latest -products * -property installationPath
     if (-not $installPath) {
-      Write-Error "Visual Studio Build Tools not found by vswhere. Please install the C++ workload."
+      Write-Error "Visual Studio installation not found by vswhere. Please install Visual Studio Build Tools."
     }
     $vsDevCmd = Join-Path $installPath "Common7/Tools/VsDevCmd.bat"
     if (-not (Test-Path $vsDevCmd)) {
