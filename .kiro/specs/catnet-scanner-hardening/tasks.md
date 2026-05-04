@@ -160,8 +160,8 @@ Este plano converte o design tecnico em tarefas atomicas e sequenciadas por depe
   - Retornar 0 se fopen falhar
   - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
-- [-] 12. Escrever testes unitarios e de propriedade para export.c
-  - [-] 12.1 Criar tests/test_export.c com casos unitarios
+- [x] 12. Escrever testes unitarios e de propriedade para export.c
+  - [x] 12.1 Criar tests/test_export.c com casos unitarios
     - export_results_to_json com lista vazia -> arquivo contem {"devices":[]}
     - export_results_to_json com 1 dispositivo -> IP, hostname, mac e ports corretos
     - export_results_to_json com hostname contendo " -> campo escapado como \"
@@ -174,7 +174,7 @@ Este plano converte o design tecnico em tarefas atomicas e sequenciadas por depe
     - Minimo 100 iteracoes; anotar com comentario: Feature: catnet-scanner-hardening, Property 7
     - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
-- [ ] 13. Checkpoint - Executar build_tests.ps1 e verificar que todos os testes passam
+- [x] 13. Checkpoint - Executar build_tests.ps1 e verificar que todos os testes passam
   - Garantir que bin/catnet_tests.exe retorna codigo 0 com todos os suites (utils, list, parse_range, export), perguntar ao usuario se houver duvidas.
 
 - [ ] 14. Refatorar src/main_raygui.c - Parte 1: estado, helpers e verificacao de admin
