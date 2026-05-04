@@ -15,6 +15,7 @@
 #include "utils.h"
 #include "net.h"
 #include "parallel_scan.h"
+#include "range_parser.h"
 #include <string.h>
 
 static Color g_bgColor = {24,24,24,255};
@@ -60,62 +61,15 @@ static void apply_theme(bool dark)
 static char g_statusText[128] = "Ready";
 static char g_logLines[256][160];
 static int g_logCount = 0;
-static void gui_logger(const char* msg)
+static void gui_logger(const char* msg, void* ctx)
 {
+    (void)ctx;
     if (!msg) { g_statusText[0] = '\0'; return; }
     strncpy(g_statusText, msg, sizeof(g_statusText) - 1);
     g_statusText[sizeof(g_statusText) - 1] = '\0';
     strncpy(g_logLines[g_logCount % 256], msg, sizeof(g_logLines[0]) - 1);
     g_logLines[g_logCount % 256][sizeof(g_logLines[0]) - 1] = '\0';
     g_logCount++;
-}
-
-static bool parse_range(const char* in, char* outStart, size_t szStart, char* outEnd, size_t szEnd)
-{
-    // Accepts formats:
-    // 1) "A.B.C.D-E" (end last octet only)
-    // 2) "A.B.C.D-E.F.G.H" (full range)
-    // 3) "A.B.C.D/nn" (CIDR prefix length)
-    const char* slash = NULL; for (const char* p = in; *p; ++p) { if (*p == '/') { slash = p; break; } }
-    if (slash) {
-        // CIDR: compute start/end from mask length
-        size_t ipLen = (size_t)(slash - in);
-        if (ipLen >= szStart) ipLen = szStart - 1;
-        strncpy(outStart, in, ipLen); outStart[ipLen] = '\0';
-        int prefix = atoi(slash + 1);
-        if (prefix < 0 || prefix > 32) return false;
-        unsigned long base = 0; if (!ip_to_uint(outStart, &base)) return false;
-        unsigned long mask = (prefix == 0) ? 0 : (0xFFFFFFFFul << (32 - prefix));
-        unsigned long network = base & mask;
-        unsigned long broadcast = network | (~mask);
-        char sBuf[64] = {0}, eBuf[64] = {0};
-        uint_to_ip(network, sBuf, sizeof(sBuf));
-        uint_to_ip(broadcast, eBuf, sizeof(eBuf));
-        safe_strcpy(outStart, szStart, sBuf);
-        safe_strcpy(outEnd, szEnd, eBuf);
-        return true;
-    }
-
-    const char* dash = NULL; for (const char* p = in; *p; ++p) { if (*p == '-') { dash = p; break; } }
-    if (!dash) return false;
-    size_t leftLen = (size_t)(dash - in);
-    if (leftLen >= szStart) leftLen = szStart - 1;
-    strncpy(outStart, in, leftLen); outStart[leftLen] = '\0';
-    const char* right = dash + 1;
-    // If the right side has no '.', assume only end last octet
-    bool rightHasDot = false; for (const char* p = right; *p; ++p) { if (*p == '.') { rightHasDot = true; break; } }
-    if (!rightHasDot) {
-        const char* lastDot = NULL; for (const char* p = outStart; *p; ++p) { if (*p == '.') lastDot = p; }
-        if (!lastDot) return false;
-        size_t prefixLen = (size_t)(lastDot - outStart) + 1; // includes '.'
-        char buf[64]; if (prefixLen >= sizeof(buf)) return false;
-        strncpy(buf, outStart, prefixLen); buf[prefixLen] = '\0';
-        strncat(buf, right, sizeof(buf) - strlen(buf) - 1);
-        safe_strcpy(outEnd, szEnd, buf);
-    } else {
-        safe_strcpy(outEnd, szEnd, right);
-    }
-    return true;
 }
 
 // Sorting helpers for Scan Results
@@ -201,9 +155,9 @@ const int splitBarH = padding;  // Vertical gap equals global padding
                     uint_to_ip(sn.network, netBuf, sizeof(netBuf));
                     unsigned long m = sn.mask; int prefix = 0; while (m) { prefix += (int)(m & 1u); m >>= 1; }
                     snprintf(ipRangeText, sizeof(ipRangeText), "%s/%d", netBuf, prefix);
-                    gui_logger("Auto-fill: range set to primary subnet");
+                    gui_logger("Auto-fill: range set to primary subnet", NULL);
                 } else {
-                    gui_logger("Auto-fill: failed to get primary subnet");
+                    gui_logger("Auto-fill: failed to get primary subnet", NULL);
                 }
             }
             if (!isScanning) {
@@ -211,21 +165,23 @@ const int splitBarH = padding;  // Vertical gap equals global padding
                 g_statusText[0] = '\0'; strncat(g_statusText, "Scanning...", sizeof(g_statusText)-1);
                 device_list_clear(&results);
                 char startBuf[64] = {0}, endBuf[64] = {0};
-                if (parse_range(ipRangeText, startBuf, sizeof(startBuf), endBuf, sizeof(endBuf))) {
+                char errbuf[128] = {0};
+                if (parse_range(ipRangeText, startBuf, sizeof(startBuf), endBuf, sizeof(endBuf), errbuf, sizeof(errbuf))) {
                     unsigned long s = 0, e = 0;
                     if (ip_to_uint(startBuf, &s) && ip_to_uint(endBuf, &e) && e >= s) {
-                        parallel_scan_start(s, e, &cfg, gui_logger);
+                        parallel_scan_start(s, e, &cfg, gui_logger, NULL);
                     } else {
-                        SubnetV4 sn; if (net_get_primary_subnet(&sn)) { parallel_scan_start(sn.start_ip, sn.end_ip, &cfg, gui_logger); }
-                        else { isScanning = false; gui_logger("Invalid IP range"); }
+                        SubnetV4 sn; if (net_get_primary_subnet(&sn)) { parallel_scan_start(sn.start_ip, sn.end_ip, &cfg, gui_logger, NULL); }
+                        else { isScanning = false; gui_logger("Invalid IP range", NULL); }
                     }
                 } else {
-                    SubnetV4 sn; if (net_get_primary_subnet(&sn)) { parallel_scan_start(sn.start_ip, sn.end_ip, &cfg, gui_logger); } else { isScanning = false; gui_logger("Invalid IP range"); }
+                    gui_logger(errbuf[0] ? errbuf : "Invalid IP range", NULL);
+                    SubnetV4 sn; if (net_get_primary_subnet(&sn)) { parallel_scan_start(sn.start_ip, sn.end_ip, &cfg, gui_logger, NULL); } else { isScanning = false; }
                 }
             }
         }
         currentX += 90 + itemSpacing;
-        if (GuiButton((Rectangle){ currentX, padding, 90, 26 }, "Stop")) { if (isScanning) { parallel_scan_stop(); gui_logger("Scan cancelled by user"); isScanning = false; } }
+        if (GuiButton((Rectangle){ currentX, padding, 90, 26 }, "Stop")) { if (isScanning) { parallel_scan_stop(); gui_logger("Scan cancelled by user", NULL); isScanning = false; } }
         currentX += 90 + itemSpacing;
         if (GuiButton((Rectangle){ currentX, padding, 110, 26 }, "Clear Log")) { g_logCount = 0; }
         currentX += 110 + itemSpacing;
@@ -234,18 +190,18 @@ const int splitBarH = padding;  // Vertical gap equals global padding
         if (GuiButton((Rectangle){ currentX, padding, quickW, 26 }, "Quick Tools")) {
             quickToolsExpanded = !quickToolsExpanded;
             quickToolsActiveMode = quickToolsExpanded;
-            gui_logger(quickToolsExpanded ? "Quick Tools: shown" : "Quick Tools: hidden");
+            gui_logger(quickToolsExpanded ? "Quick Tools: shown" : "Quick Tools: hidden", NULL);
         }
         currentX += quickW + itemSpacing;
         // Right-aligned global controls: Settings and Help icon buttons
         float rightX = (float)(screenWidth - padding*3); // move a bit left from the edge
         float btnW = 34, btnH = 28;
         rightX -= btnW;
-        if (GuiButton((Rectangle){ rightX, padding, btnW, btnH }, NULL)) { gui_logger("Help clicked"); }
+        if (GuiButton((Rectangle){ rightX, padding, btnW, btnH }, NULL)) { gui_logger("Help clicked", NULL); }
         GuiDrawIcon(ICON_HELP, (int)(rightX + btnW/2 - 8), (int)(padding + btnH/2 - 8), 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
         rightX -= itemSpacing;
         rightX -= btnW;
-        if (GuiButton((Rectangle){ rightX, padding, btnW, btnH }, NULL)) { gui_logger("Settings clicked"); }
+        if (GuiButton((Rectangle){ rightX, padding, btnW, btnH }, NULL)) { gui_logger("Settings clicked", NULL); }
         GuiDrawIcon(ICON_GEAR, (int)(rightX + btnW/2 - 8), (int)(padding + btnH/2 - 8), 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
         
         // ---- 2. Scan Configuration Panel ----
@@ -343,7 +299,7 @@ const int splitBarH = padding;  // Vertical gap equals global padding
             if (quickToolsActiveMode) { g_logCount = 0; }
             int ok = net_ping_ipv4(quickIpText);
             char msg[128]; snprintf(msg, sizeof(msg), ok ? "Ping %s: success" : "Ping %s: failed", quickIpText);
-            gui_logger(msg);
+            gui_logger(msg, NULL);
         }
         qx += pingW + itemSpacing;
         Vector2 tDns = MeasureTextEx(df, "DNS Query", fontSize, fontSpacing);
@@ -353,7 +309,7 @@ const int splitBarH = padding;  // Vertical gap equals global padding
             char host[128] = {0};
             int ok = net_reverse_dns(quickIpText, host, sizeof(host));
             char msg[196]; snprintf(msg, sizeof(msg), ok && host[0] ? "DNS %s -> %s" : "DNS %s: not found", quickIpText, host);
-            gui_logger(msg);
+            gui_logger(msg, NULL);
         }
         qx += dnsW + itemSpacing;
         Vector2 tPort = MeasureTextEx(df, "Port Scan", fontSize, fontSpacing);
@@ -373,7 +329,7 @@ const int splitBarH = padding;  // Vertical gap equals global padding
             } else {
                 snprintf(msg, sizeof(msg), "Open ports %s: none", quickIpText);
             }
-            gui_logger(msg);
+            gui_logger(msg, NULL);
         }
         } // end Quick Tools expanded
 
