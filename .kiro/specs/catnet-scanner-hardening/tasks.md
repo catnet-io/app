@@ -178,12 +178,12 @@ Este plano converte o design tecnico em tarefas atomicas e sequenciadas por depe
   - Garantir que bin/catnet_tests.exe retorna codigo 0 com todos os suites (utils, list, parse_range, export), perguntar ao usuario se houver duvidas.
 
 - [ ] 14. Refatorar src/main_raygui.c - Parte 1: estado, helpers e verificacao de admin
-  - [ ] 14.1 Definir struct UIState e consolidar variaveis de estado
+  - [x] 14.1 Definir struct UIState e consolidar variaveis de estado
     - Definir typedef struct UIState com todos os campos do design: ip_range_text[64], ip_range_edit, ip_q[4][4], ip_q_edit[4], quick_ip_text[64], auto_fill_subnet, scan_on_startup, startup_scan_done, quick_tools_expanded, quick_tools_active_mode, sort_column, sort_ascending, splitter_ratio, dragging_splitter, selected_index, scroll, dbg_scroll, is_admin
     - Remover as 17 variaveis estaticas globais (quickToolsExpanded, ipQ1..4, splitterRatio, etc.) e a variavel lanOnly (dead code)
     - Inicializar UIState no inicio de main() com os valores padrao do design
     - _Requirements: 1.3_
-  - [ ] 14.2 Implementar check_is_admin e GUI Logger thread-safe
+  - [x] 14.2 Implementar check_is_admin e GUI Logger thread-safe
     - Implementar static bool check_is_admin(void) usando AllocateAndInitializeSid + CheckTokenMembership
     - Implementar gui_log_init, gui_log_destroy, gui_log_push(const char* msg, void* ctx), gui_log_snapshot e gui_log_clear com CRITICAL_SECTION
     - gui_log_push deve atualizar g_statusText dentro da secao critica
