@@ -147,12 +147,12 @@ Este plano converte o design tecnico em tarefas atomicas e sequenciadas por depe
     - Nota: net.c nao recebe logger diretamente; o logging de erros WSA pode ser feito via stderr ou via o logger passado por scan.c
     - _Requirements: 7.4_
 
-- [ ] 10. Checkpoint - Verificar que build.ps1 -Compiler Clang compila sem warnings de API deprecada
+- [x] 10. Checkpoint - Verificar que build.ps1 -Compiler Clang compila sem warnings de API deprecada
   - Remover /D _WINSOCK_DEPRECATED_NO_WARNINGS de build.ps1 e confirmar que o build continua limpo
   - Garantir que bin/catnet_scanner.exe e produzido sem erros, perguntar ao usuario se houver duvidas.
   - _Requirements: 7.5_
 
-- [ ] 11. Implementar exportacao JSON em src/export.c e src/export.h
+- [x] 11. Implementar exportacao JSON em src/export.c e src/export.h
   - Adicionar declaracao de export_results_to_json(const char* path, const DeviceList* list) em src/export.h
   - Implementar json_write_string(FILE* f, const char* s) como funcao estatica interna que escapa ", \, \n, \r, \t e caracteres de controle (< 0x20) como \uXXXX
   - Implementar export_results_to_json gerando {"devices":[...]} com campos ip, hostname, mac e ports (array de inteiros)
@@ -160,8 +160,8 @@ Este plano converte o design tecnico em tarefas atomicas e sequenciadas por depe
   - Retornar 0 se fopen falhar
   - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
-- [ ] 12. Escrever testes unitarios e de propriedade para export.c
-  - [ ] 12.1 Criar tests/test_export.c com casos unitarios
+- [-] 12. Escrever testes unitarios e de propriedade para export.c
+  - [-] 12.1 Criar tests/test_export.c com casos unitarios
     - export_results_to_json com lista vazia -> arquivo contem {"devices":[]}
     - export_results_to_json com 1 dispositivo -> IP, hostname, mac e ports corretos
     - export_results_to_json com hostname contendo " -> campo escapado como \"
