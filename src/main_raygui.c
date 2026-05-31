@@ -393,9 +393,14 @@ const int splitBarH = padding;  // Vertical gap equals global padding
             char msg[256] = {0};
             if (ok && openCount > 0) {
                 char buf[160] = {0};
+                size_t offset = 0;
                 for (int i = 0; i < openCount; ++i) {
-                    char t[12]; snprintf(t, sizeof(t), "%d%s", open[i], (i<openCount-1?",":""));
-                    strncat(buf, t, sizeof(buf) - strlen(buf) - 1);
+                    size_t remain = sizeof(buf) - offset;
+                    if (remain <= 1) break;
+                    int written = snprintf(buf + offset, remain, "%d%s", open[i], (i<openCount-1?",":""));
+                    if (written > 0) {
+                        offset += (size_t)written < remain ? (size_t)written : remain - 1;
+                    }
                 }
                 snprintf(msg, sizeof(msg), "Open ports %s: %s", ui.quick_ip_text, buf);
             } else {
@@ -511,9 +516,14 @@ const int splitBarH = padding;  // Vertical gap equals global padding
             GuiLabel((Rectangle){ columnOffsets[1], yPos, columnWidths[1], (float)rowHeight }, di->hostname[0] ? di->hostname : "(unnamed)");
             GuiLabel((Rectangle){ columnOffsets[2], yPos, columnWidths[2], (float)rowHeight }, di->ip);
             char portsBuf[128] = {0};
+            size_t portsOffset = 0;
             for (int p = 0; p < di->open_ports_count; ++p) {
-                char tmp[16]; snprintf(tmp, sizeof(tmp), "%d%s", di->open_ports[p], (p<di->open_ports_count-1?",":""));
-                strncat(portsBuf, tmp, sizeof(portsBuf)-strlen(portsBuf)-1);
+                size_t remain = sizeof(portsBuf) - portsOffset;
+                if (remain <= 1) break;
+                int written = snprintf(portsBuf + portsOffset, remain, "%d%s", di->open_ports[p], (p<di->open_ports_count-1?",":""));
+                if (written > 0) {
+                    portsOffset += (size_t)written < remain ? (size_t)written : remain - 1;
+                }
             }
             GuiLabel((Rectangle){ columnOffsets[3], yPos, columnWidths[3], (float)rowHeight }, portsBuf);
             GuiLabel((Rectangle){ columnOffsets[4], yPos, columnWidths[4], (float)rowHeight }, di->mac);
