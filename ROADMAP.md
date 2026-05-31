@@ -13,7 +13,7 @@ Este documento traça o caminho desde a estabilização atual até a consolidaç
 - [x] **UI/UX Cyberpunk**: Abandonar interfaces TUI engessadas por um visual moderno, de alto contraste (*glassmorphism*, neon), construído em React e TypeScript.
 - [x] **Arquitetura Desacoplada**: Implementar Wails para servir o binário compilado sem depender de servidores Node.js externos.
 - [x] **Auto-detect IP Range**: Detecção inteligente e automática da sub-rede (`/24`) da interface ativa.
-- [x] **Exportação Base**: Exportar varreduras nos formatos CSV, TXT e XML.
+- [x] **Exportação Base**: Exportar varreduras nos formatos JSON, CSV e XML.
 
 ---
 

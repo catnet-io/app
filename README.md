@@ -15,7 +15,7 @@ Built on the robust **Go** ecosystem and packaged via **Wails** using **React/Ty
 - ⚡ **Brutally Parallel Scan**: Built entirely with Goroutines, scanning entire subnets in a fraction of a second.
 - 🎨 **Cyberpunk UI**: A modern React interface using translucent glass (*Glassmorphism*), neon lines, responsive grids, and subtle animations. And of course, with Nyan Cat pulling your progress bar.
 - 📡 **Smart Auto-Detect**: Instantly loads the `/24` subnet of your main network interface on startup.
-- 💾 **Practical Export**: Save reports in `CSV`, `TXT`, or `XML` format with a single click.
+- 💾 **Practical Export**: Save reports in `JSON`, `CSV`, or `XML` format with a single click.
 - 🛠️ **Decoupled Architecture**: Secure Go network engine and rich, decoupled React UI, packaged into a single standalone `.exe` file.
 
 ## 🚀 Upcoming Features

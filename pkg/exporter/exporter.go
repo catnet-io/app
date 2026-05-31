@@ -4,23 +4,19 @@ import (
 	"bytes"
 	"catnet_scanner_wails/pkg/scanner"
 	"encoding/csv"
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
-func ExportTXT(devices []scanner.DeviceInfo) ([]byte, error) {
-	var buf bytes.Buffer
-	buf.WriteString("CatNet Scanner Results\n------------------------\n")
-	for _, d := range devices {
-		status := "Dead"
-		if d.IsAlive {
-			status = "Alive"
-		}
-		buf.WriteString(fmt.Sprintf("IP: %s | Host: %s | MAC: %s | Status: %s | Ports: %v\n", d.IP, d.Hostname, d.MAC, status, d.OpenPorts))
+func ExportJSON(devices []scanner.DeviceInfo) ([]byte, error) {
+	out, err := json.MarshalIndent(devices, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("failed to encode JSON: %w", err)
 	}
-	return buf.Bytes(), nil
+	return out, nil
 }
 
 func ExportXML(devices []scanner.DeviceInfo) ([]byte, error) {

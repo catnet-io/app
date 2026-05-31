@@ -130,11 +130,11 @@ func (a *App) GetLocalIPRange() string {
 // ExportResults asks the user for a save location and exports the results
 func (a *App) ExportResults(devices []scanner.DeviceInfo) (string, error) {
 	options := runtime.SaveDialogOptions{
-		DefaultFilename: "catnet_results.csv",
+		DefaultFilename: "catnet_results.json",
 		Title:           "Export Scan Results",
 		Filters: []runtime.FileFilter{
+			{DisplayName: "JSON Files (*.json)", Pattern: "*.json"},
 			{DisplayName: "CSV Files (*.csv)", Pattern: "*.csv"},
-			{DisplayName: "Text Files (*.txt)", Pattern: "*.txt"},
 			{DisplayName: "XML Files (*.xml)", Pattern: "*.xml"},
 		},
 	}
@@ -160,8 +160,8 @@ func (a *App) ExportResults(devices []scanner.DeviceInfo) (string, error) {
 	var data []byte
 	var formatErr error
 	
-	if len(savePath) > 4 && savePath[len(savePath)-4:] == ".txt" {
-		data, formatErr = exporter.ExportTXT(devices)
+	if len(savePath) > 5 && savePath[len(savePath)-5:] == ".json" {
+		data, formatErr = exporter.ExportJSON(devices)
 	} else if len(savePath) > 4 && savePath[len(savePath)-4:] == ".xml" {
 		data, formatErr = exporter.ExportXML(devices)
 	} else {
