@@ -1,111 +1,57 @@
-# CatNet Scanner (GUI)
+# CatNet Scanner
 
-CatNet Scanner is a Windows network scanner with a graphical UI built using Raygui (raylib).
+<p align="center">
+  <img src="frontend/src/assets/nyan.png" width="200" alt="CatNet Scanner Logo">
+</p>
 
-## Highlights
+O **CatNet Scanner** é um scanner de rede incrivelmente rápido e estiloso, desenvolvido para quem busca a agilidade de um software de linha de comando com a beleza de um dashboard Cyberpunk/SOC.
 
-- Parallel scan engine for responsive UI and faster discovery.
-- CIDR support in `IP Range/CIDR` with an `Auto-range` helper.
-- Quick Tools: `Ping`, `DNS`, and `Ports` for a single IP.
-- Filtered results: only alive devices are listed by default.
-- LAN-only toggle to constrain scanning to the primary subnet.
-- Responsive columns and resizable window.
-- Status bar and debug log with clearer progress reporting.
+Construído sobre o robusto ecosistema **Go** e empacotado através do **Wails** usando **React/TypeScript**, o CatNet fornece detecção massivamente paralela sem engasgos na interface. O foco? Destronar softwares clássicos como o Angry IP Scanner entregando mais performance, sem Java, num binário único.
 
-## Features
+---
 
-- Scan local subnet and custom IP ranges (CIDR notation supported).
-- Identify devices: ICMP ping, reverse DNS, MAC via ARP.
-- Check common TCP open ports (configurable list).
-- Export results to a text file.
+## 🌟 Features (v0.4.0)
 
-## Screenshot
+- ⚡ **Scan Brutalmente Paralelo**: Feito inteiramente com Goroutines, scaneia sub-redes inteiras numa fração de segundo.
+- 🎨 **Cyberpunk UI**: Uma interface React moderna usando vidro translúcido (*Glassmorphism*), linhas néon, grids responsivos e animações sutis. E claro, com o Nyan Cat puxando a sua barra de progresso.
+- 📡 **Auto-Detect Inteligente**: Carrega instantaneamente a sub-rede (`/24`) da sua interface de rede principal ao inicializar.
+- 💾 **Exportação Prática**: Salve relatórios em formato `CSV`, `TXT` ou `XML` com um simples clique.
+- 🛠️ **Arquitetura Desacoplada**: Motor de rede seguro em Go e interface rica e desacoplada em React, empacotados em um único arquivo `.exe` stand-alone.
 
-Screenshots are stored under `docs/screenshots/` and referenced here. Add a
-current UI screenshot at `docs/screenshots/ui-v0.2.png` and it will be linked
-below.
+## 🚀 Próximas Implementações
 
-![UI Screenshot](docs/screenshots/ui-v0.2.png)
+Consulte o nosso [`ROADMAP.md`](ROADMAP.md) para ver para onde estamos caminhando. Recursos como Perfis de Scan, Openers Customizáveis (SSH, RDP) e Resolução Vendor OUI já estão no forno.
 
-## Build (Windows, Clang)
+## ⚙️ Compilação e Desenvolvimento
 
-### Compile
+O CatNet Scanner utiliza o Wails. Você não precisa instalar dependências pesadas do React ou Node caso queira apenas compilar o backend.
 
-```
-powershell -ExecutionPolicy Bypass -File build.ps1 -Compiler Clang
-```
+### Pré-requisitos
+- [Go 1.20+](https://go.dev/dl/)
+- [Bun](https://bun.sh/) (Gerenciador de pacotes rápido para o frontend)
+- [Wails CLI](https://wails.io/docs/gettingstarted/installation)
 
-Produces `bin\catnet_scanner.exe`.
-
-Notes:
-- Uses `clang-cl` for compilation and `lld-link` (or `link.exe`) for linking.
-- If Visual Studio Build Tools are installed, the script can auto-activate the environment for Windows SDK headers/libs.
-- Requires network privileges to send ICMP (ping) and ARP on Windows.
-
-### Run
-
-```
-bin\catnet_scanner.exe
+### Instalando o Wails
+```bash
+go install github.com/wailsapp/wails/v2/cmd/wails@latest
 ```
 
-## Usage Notes
-
-- The GUI is created programmatically in `src\main_raygui.c`.
-- MAC via ARP works only on the same subnet; ping uses ICMP; ports are checked via non-blocking TCP.
-- Results list currently shows alive devices; total found count appears in the status bar.
-- Use `LAN only` to restrict scans to your primary subnet.
-
-## Third-Party and Acknowledgements
-
-- Uses `raylib` and `raygui` as Git submodules:
-  - raylib: https://github.com/raysan5/raylib
-  - raygui: https://github.com/raysan5/raygui
-- Huge thanks to the authors and contributors of raylib and raygui.
-
-## Submodules (how to clone and update)
-
-Clone the repository with submodules:
-
-```
-git clone --recursive https://github.com/mendsec/catnet_scanner.git
+### Rodando em Ambiente de Desenvolvimento (Live Reload)
+Para modificar a UI ou o Go com live-reload, use:
+```bash
+wails dev
 ```
 
-If you already cloned without `--recursive`, initialize and update submodules:
-
+### Gerando o Executável de Produção
+Para compilar a versão final stand-alone, execute:
+```bash
+wails build -clean
 ```
-git submodule update --init --recursive
-```
+O executável final estará disponível em `build/bin/catnet.exe`.
 
-To update submodules to the latest upstream changes and record them in the parent repo:
+---
 
-```
-# Check out default branch for each submodule and pull
-git submodule foreach "git checkout main || git checkout master"
-git submodule foreach "git pull --ff-only"
+## 🤝 Contribuindo
+Sugestões são bem-vindas. Sinta-se livre para abrir Issues de novas ferramentas que você gostaria de ver na aba "Quick Tools" ou reportar bugs de UI.
 
-# Record new submodule commits in the parent repository
-git add third_party/raylib third_party/raygui
-git commit -m "Update submodules"
-git push
-```
-
-## .github (purpose and practical use)
-
-The `.github` folder contains templates that streamline collaboration on GitHub:
-
-- Issue templates: provide structured forms for reporting bugs and requesting features, ensuring key details (steps to reproduce, expected behavior, environment, motivation) are captured consistently.
-- Pull Request template: guides contributors to describe changes, affected components, and validation steps, and to update docs or scripts when needed. This reduces review friction and improves traceability.
-- Issue config: disables blank issues and points users to the documentation for build and usage information, helping keep reports actionable.
-
-Practical benefits:
-- Faster triage and clearer communication between maintainers and contributors.
-- More consistent and complete reports, leading to fewer back-and-forths.
-- Better documentation hygiene by reminding contributors to update docs alongside code changes.
-
-How to use:
-- On GitHub, when opening an Issue or PR, the corresponding template appears automatically. Fill it in with concise, relevant information.
-- Maintainers use the provided structure to reproduce issues, validate fixes, and assess impact, improving the reliability of the development workflow.
-
-## Changelog
-
-See `docs/RELEASE_NOTES_v0.2.0.md` for the latest changes and upgrade notes.
+> Copyright © 2026 Mendsec. Criado por Fabio Mendes.

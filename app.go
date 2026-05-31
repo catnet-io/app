@@ -1,0 +1,167 @@
+package main
+
+import (
+	"catnet_scanner_wails/pkg/scanner"
+	"context"
+	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+	"net"
+	"os"
+)
+
+// App struct
+type App struct {
+	ctx context.Context
+}
+
+// NewApp creates a new App application struct
+func NewApp() *App {
+	return &App{}
+}
+
+// startup is called when the app starts. The context is saved
+// so we can call the runtime methods
+func (a *App) startup(ctx context.Context) {
+	a.ctx = ctx
+}
+
+// StartScan wrapper for frontend
+func (a *App) StartScan(ips []string, cfg scanner.ScanConfig) error {
+	// We emit events to the frontend whenever a device is scanned
+	onResult := func(di scanner.DeviceInfo) {
+		runtime.EventsEmit(a.ctx, "scan_result", di)
+	}
+
+	onProgress := func(prog float64) {
+		runtime.EventsEmit(a.ctx, "scan_progress", prog)
+	}
+
+	runtime.EventsEmit(a.ctx, "scan_started")
+	err := scanner.StartScan(ips, cfg, onResult, onProgress)
+	runtime.EventsEmit(a.ctx, "scan_finished")
+	return err
+}
+
+// StopScan wrapper
+func (a *App) StopScan() {
+	scanner.StopScan()
+}
+
+// Ping wrapper for Quick Tools
+func (a *App) Ping(ip string) bool {
+	return scanner.Ping(ip, 1000)
+}
+
+// ReverseDNS wrapper
+func (a *App) ReverseDNS(ip string) string {
+	return scanner.ReverseDNS(ip)
+}
+
+// GetMAC wrapper
+func (a *App) GetMAC(ip string) string {
+	return scanner.GetMAC(ip)
+}
+
+// ScanPorts wrapper
+func (a *App) ScanPorts(ip string, ports []int) []int {
+	return scanner.ScanPorts(ip, ports, 500)
+}
+
+// ParseRange expands an IP range string (e.g. 192.168.1.1-254) into a list of IPs.
+func (a *App) ParseRange(input string) ([]string, error) {
+	return scanner.ParseRange(input)
+}
+
+// GetLocalIPRange attempts to find the primary network interface and returns its CIDR.
+func (a *App) GetLocalIPRange() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "192.168.1.0/24"
+	}
+	
+	var fallback string
+	
+	for _, addr := range addrs {
+		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			ip := ipnet.IP.To4()
+			if ip != nil {
+				// Ignore APIPA (169.254.x.x)
+				if ip[0] == 169 && ip[1] == 254 {
+					continue
+				}
+				
+				mask := ipnet.Mask
+				network := net.IP{ip[0] & mask[0], ip[1] & mask[1], ip[2] & mask[2], ip[3] & mask[3]}
+				ones, _ := mask.Size()
+				cidr := fmt.Sprintf("%s/%d", network.String(), ones)
+				
+				// Prefer standard private IPs
+				if ip[0] == 192 || ip[0] == 10 || ip[0] == 172 {
+					return cidr
+				}
+				
+				if fallback == "" {
+					fallback = cidr
+				}
+			}
+		}
+	}
+	
+	if fallback != "" {
+		return fallback
+	}
+	return "192.168.1.0/24"
+}
+
+// ExportResults asks the user for a save location and exports the results
+func (a *App) ExportResults(devices []scanner.DeviceInfo) (string, error) {
+	options := runtime.SaveDialogOptions{
+		DefaultFilename: "catnet_results.csv",
+		Title:           "Export Scan Results",
+		Filters: []runtime.FileFilter{
+			{DisplayName: "CSV Files (*.csv)", Pattern: "*.csv"},
+			{DisplayName: "Text Files (*.txt)", Pattern: "*.txt"},
+			{DisplayName: "XML Files (*.xml)", Pattern: "*.xml"},
+		},
+	}
+
+	filepath, err := runtime.SaveFileDialog(a.ctx, options)
+	if err != nil || filepath == "" {
+		return "", err
+	}
+
+	var data string
+	
+	if len(filepath) > 4 && filepath[len(filepath)-4:] == ".txt" {
+		data = "CatNet Scanner Results\n------------------------\n"
+		for _, d := range devices {
+			status := "Dead"
+			if d.IsAlive { status = "Alive" }
+			data += fmt.Sprintf("IP: %s | Host: %s | MAC: %s | Status: %s | Ports: %v\n", d.IP, d.Hostname, d.MAC, status, d.OpenPorts)
+		}
+	} else if len(filepath) > 4 && filepath[len(filepath)-4:] == ".xml" {
+		data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>\n"
+		for _, d := range devices {
+			status := "Dead"
+			if d.IsAlive { status = "Alive" }
+			data += fmt.Sprintf("\t<device>\n\t\t<ip>%s</ip>\n\t\t<hostname>%s</hostname>\n\t\t<mac>%s</mac>\n\t\t<status>%s</status>\n\t</device>\n", d.IP, d.Hostname, d.MAC, status)
+		}
+		data += "</results>"
+	} else {
+		// Default to CSV
+		data = "IP,Hostname,MAC,Status,Open Ports\n"
+		for _, d := range devices {
+			status := "Dead"
+			if d.IsAlive { status = "Alive" }
+			ports := ""
+			for i, p := range d.OpenPorts {
+				if i > 0 { ports += ";" }
+				ports += fmt.Sprintf("%d", p)
+			}
+			data += fmt.Sprintf("%s,%s,%s,%s,%s\n", d.IP, d.Hostname, d.MAC, status, ports)
+		}
+	}
+
+	err = os.WriteFile(filepath, []byte(data), 0644)
+	return filepath, err
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "catnet_scanner",
+  "outputfilename": "catnet",
+  "info": {
+    "productName": "CatNet Scanner",
+    "productVersion": "0.4.0",
+    "productCompany": "Mendsec",
+    "copyright": "Copyright © 2026 Mendsec"
+  },
+  "frontend:install": "bun install",
+  "frontend:build": "bun run build",
+  "frontend:dev:watcher": "bun run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {
+    "name": "mendsec",
+    "email": "fabiomendes@mailfence.com"
+  }
+}

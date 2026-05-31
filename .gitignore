@@ -1,36 +1,15 @@
-# Build outputs
-bin/
-*.obj
+# Build and Binary
 *.exe
-*.dll
-*.lib
-*.pdb
-*.ilk
-*.exp
-*.idb
-*.manifest
-*.rsp
-*.tlog
+*.obj
+build/bin/
+build/windows/
+bin/
 
-# Generated
-src/generated/
+# Node
+node_modules/
+frontend/dist/
+frontend/node_modules/
 
-# Logs and temp
-*.log
-*.tmp
-*.cache
-
-# IDE/editor and user-specific
+# IDEs
+.idea/
 .vscode/
-.vs/
-*.user
-*.suo
-
-# Environment/config
-.env
-.env.*
-
-# Private/local scripts (keep build script tracked)
-sync_gh.ps1
-# Local AI chat logs (do not track backups)
-/docs/chat_logs/
