@@ -76,28 +76,6 @@ static DWORD WINAPI worker_proc(LPVOID lpParam)
     return 0;
 }
 
-/* ---- Safe teardown of previous state (if initialized) ---- */
-static void teardown_state(void)
-{
-    if (g_state.results_lock_initialized) {
-        device_list_clear(&g_state.results);
-        DeleteCriticalSection(&g_state.results_lock);
-        g_state.results_lock_initialized = 0;
-    }
-    if (g_state.state_lock_initialized) {
-        DeleteCriticalSection(&g_state.state_lock);
-        g_state.state_lock_initialized = 0;
-    }
-    /* Close any leftover thread handles */
-    for (int i = 0; i < g_state.num_threads; ++i) {
-        if (g_state.threads[i]) {
-            CloseHandle(g_state.threads[i]);
-            g_state.threads[i] = NULL;
-        }
-    }
-    g_state.num_threads = 0;
-}
-
 /* ---- Public API ---- */
 
 int parallel_scan_start(unsigned long start_ip_uint,
