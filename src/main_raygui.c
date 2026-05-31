@@ -176,6 +176,7 @@ const int splitBarH = padding;  // Vertical gap equals global padding
     DeviceList results; device_list_init(&results);
     ScanConfig cfg; scan_config_init(&cfg);
     bool isScanning = false;
+    GuiEnableTooltip();
     apply_theme(true);
     // Increase global font size for readability
     GuiSetStyle(DEFAULT, TEXT_SIZE, 18);
@@ -262,11 +263,15 @@ const int splitBarH = padding;  // Vertical gap equals global padding
         float rightX = (float)(screenWidth - padding*3); // move a bit left from the edge
         float btnW = 34, btnH = 28;
         rightX -= btnW;
+        GuiSetTooltip("Help");
         if (GuiButton((Rectangle){ rightX, padding, btnW, btnH }, NULL)) { gui_log_push("Help clicked", NULL); }
+        GuiSetTooltip(NULL);
         GuiDrawIcon(ICON_HELP, (int)(rightX + btnW/2 - 8), (int)(padding + btnH/2 - 8), 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
         rightX -= itemSpacing;
         rightX -= btnW;
+        GuiSetTooltip("Settings");
         if (GuiButton((Rectangle){ rightX, padding, btnW, btnH }, NULL)) { gui_log_push("Settings clicked", NULL); }
+        GuiSetTooltip(NULL);
         GuiDrawIcon(ICON_GEAR, (int)(rightX + btnW/2 - 8), (int)(padding + btnH/2 - 8), 1, GetColor(GuiGetStyle(DEFAULT, TEXT_COLOR_NORMAL)));
         
         // ---- 2. Scan Configuration Panel ----

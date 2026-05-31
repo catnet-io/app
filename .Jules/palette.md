@@ -1,0 +1,3 @@
+## 2025-05-15 - [Raygui Icon-Only Button Accessibility]
+**Learning:** Immediate-mode GUIs like Raygui often don't have built-in accessible properties like `aria-label` or automatic tooltips for icon-only buttons. To provide accessibility for icon-only buttons, we need to explicitly enable tooltips globally with `GuiEnableTooltip()` and dynamically set the tooltip text using `GuiSetTooltip("Context")` right before rendering the button, and reset it using `GuiSetTooltip(NULL)` immediately after.
+**Action:** When working with Raygui, always enable tooltips on app initialization and ensure every icon-only or ambiguous `GuiButton` is wrapped with `GuiSetTooltip` to provide proper context and accessibility for users.
