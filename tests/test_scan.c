@@ -5,14 +5,24 @@
 #include "../src/net.h"
 #include "../src/app.h"
 
-// Stub out network functions so we don't need Windows APIs or actual networking
-int net_init(void) { return 1; }
-void net_cleanup(void) {}
-int net_ping_ipv4(const char* ip) { return 0; }
-int net_reverse_dns(const char* ip, char* hostname, size_t hostsz) { return 0; }
-int net_get_mac(const char* ip, char* macbuf, size_t macsz) { return 0; }
-int net_scan_ports(const char* ip, const int* ports, int ports_count, int timeout_ms, int* open_ports, int* open_count) { return 0; }
-int net_get_primary_subnet(SubnetV4* out) { return 0; }
+static void test_scan_config_init(void)
+{
+    ScanConfig cfg;
+    memset(&cfg, 0, sizeof(cfg)); // ensure it's clean before init
+
+    scan_config_init(&cfg);
+
+    TEST_ASSERT_EQUAL_INT(6, cfg.default_ports_count);
+
+    // Check default ports
+    TEST_ASSERT_EQUAL_INT(22, cfg.default_ports[0]);
+    TEST_ASSERT_EQUAL_INT(80, cfg.default_ports[1]);
+    TEST_ASSERT_EQUAL_INT(443, cfg.default_ports[2]);
+    TEST_ASSERT_EQUAL_INT(139, cfg.default_ports[3]);
+    TEST_ASSERT_EQUAL_INT(445, cfg.default_ports[4]);
+    TEST_ASSERT_EQUAL_INT(3389, cfg.default_ports[5]);
+    TEST_ASSERT_EQUAL_INT(500, cfg.port_timeout_ms);
+}
 
 static void test_scan_range_end_less_than_start(void)
 {
@@ -31,5 +41,6 @@ static void test_scan_range_end_less_than_start(void)
 
 void run_test_scan(void)
 {
+    RUN_TEST(test_scan_config_init);
     RUN_TEST(test_scan_range_end_less_than_start);
 }
