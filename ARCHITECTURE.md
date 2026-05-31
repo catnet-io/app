@@ -12,31 +12,36 @@ graph LR
     C --> D[Network Infrastructure]
 ```
 
-## 2. Backend (Go)
-The core logic resides in `pkg/scanner` and is designed around extreme concurrency and low-level system interactions:
+## 2. Go Backend Modules (`pkg/scanner/`)
 
-### 2.1 Concurrency Model (`scan.go`)
-Instead of manual POSIX/Windows threads, we use **Goroutines** to distribute the workload.
-* A `StartScan` function accepts a slice of IPs and dispatches them via a buffered Go channel.
-* A worker pool (`maxThreads`) consumes the IPs from the channel.
-* This model prevents race conditions and eliminates the need for manual mutex locks over the results, ensuring fluid scaling whether scanning a `/24` or `/16` subnet.
+### `net.go` (Network primitives)
+- `func Ping(ip string, timeoutMs int) bool`
+  - Sends a native ICMP ping. On Windows, it delegates to the OS `ping` executable with hidden windows to bypass the Raw Socket administrative constraint.
+- `func ReverseDNS(ip string) string`
+  - Resolves a hostname from an IP address.
+- `func GetMAC(ip string) string`
+  - Fetches the MAC address of an IP in the local subnet. Uses native Windows `iphlpapi.dll` and `SendARP` via Syscalls for high performance.
+- `func ScanPorts(ip string, ports []int, timeoutMs int) []int`
+  - Concurrently probes specified TCP ports using `net.DialTimeout`.
 
-### 2.2 Networking Implementations (`net.go`)
-To maintain compatibility and bypass the requirement for Administrative privileges (Raw Sockets constraint on Windows), we use specific strategies:
-* **Ping**: Utilizes the OS-native `ping` executable (`exec.Command` with `HideWindow: true`) to emit ICMP packets silently.
-* **MAC Address / ARP**: Executes native Windows syscalls directly against `iphlpapi.dll` using `SendARP`. This allows us to bypass heavy Cgo dependencies and query MAC addresses natively in a fraction of a millisecond.
-* **Port Scanner**: A pure Go `net.DialTimeout` scanner. It's lightweight and async by default.
+### `scan.go` (Concurrency & State)
+- `type DeviceInfo`
+  - Fields: IP, IsAlive, Hostname, MAC, OpenPortsCount, OpenPorts.
+- `func StartScan(...)`
+  - Orchestrates a parallel scan using Go channels and WaitGroups (`MaxThreads` goroutines). It emits progress and results back to the frontend synchronously via callbacks.
+- `func StopScan()`
+  - Cancels the context for the ongoing parallel scan.
 
-## 3. Frontend (React + Vite + Bun)
-The frontend serves purely as the presentation layer:
-* **Framework**: React 18 powered by Vite.
-* **Package Manager**: Bun is strictly used instead of Node.js/NPM, drastically reducing build times and CI/CD pipelines duration.
-* **Styling**: Handcrafted Vanilla CSS utilizing CSS Variables (`--text-highlight`, `--panel-bg`) to achieve a strict "Glassmorphism Cyberpunk" aesthetic. We actively avoid heavy CSS frameworks to retain a minimal binary footprint.
+### `utils.go` (Parsers)
+- `func ParseRange(input string) ([]string, error)`
+  - Parses CIDR notations (`192.168.1.0/24`) and dash-separated ranges (`192.168.1.1-254`). Generates a flat slice of target IPs.
 
-## 4. IPC (Inter-Process Communication)
-The backend does **not** expose a standard REST API. Instead, Wails generates direct JavaScript bindings for Go methods. 
-* Event-driven updates (`runtime.EventsEmit`) push realtime scan events directly to the React state.
-* The frontend consumes events like `scan_started`, `scan_progress`, and `scan_result` to update the Data Table and Progress Bar synchronously.
+## 3. IPC and Frontend Bindings
+The backend does **not** expose a standard REST API. Instead, Wails generates direct JavaScript bindings for Go methods inside the `App` struct (e.g., `StartScan`, `StopScan`, `ParseRange`, `ExportCSV`).
 
-## 5. Legacy C Code
-The old C codebase (Raylib/Raygui based) is retained inside the `legacy_c/` folder for reference, but it is no longer compiled or tracked by the build system.
+- Event-driven updates (`runtime.EventsEmit`) push realtime scan events directly to the React state.
+- The frontend consumes events like `scan_started`, `scan_progress`, and `scan_result` to update the Data Table and Progress Bar synchronously.
+- The `ExportCSV` function triggers the native `SaveFileDialog` and writes the results locally without requiring browser hacks.
+
+## 4. Legacy C Code
+O diretório `legacy_c/` contém a implementação original em C/Raylib do CatNet Scanner. Este código não é mais compilado pelo sistema de build atual e está mantido apenas para referência histórica. Consultar a branch `legacy/c-raylib` para histórico de commits.

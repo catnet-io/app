@@ -25,6 +25,15 @@ function App() {
   const [sortCol, setSortCol] = useState<keyof DeviceInfo | ''>('');
   const [sortAsc, setSortAsc] = useState(true);
 
+  // Valida se a string é um range IP ou CIDR válido antes de enviar
+  // ao backend. Não substitui a validação do backend.
+  const isValidIpRange = (value: string): boolean => {
+    const cidrPattern = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/;
+    const dashPattern =
+      /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}-(\d{1,3}|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/;
+    return cidrPattern.test(value) || dashPattern.test(value);
+  };
+
   const logsEndRef = useRef<HTMLDivElement>(null);
 
   const addLog = (msg: string) => {
@@ -145,19 +154,23 @@ function App() {
           </div>
         </div>
         <div className="header-controls">
-          <div className="input-group">
+          <div className="input-group" style={{ position: 'relative' }}>
             <input 
               className="cyber-input" 
               value={ipRange}
               onChange={e => setIpRange(e.target.value)}
               disabled={isScanning}
               placeholder="IP Range / CIDR"
+              style={{ borderColor: !isValidIpRange(ipRange) && ipRange !== '' ? 'var(--status-dead)' : undefined }}
             />
             <button className="icon-btn" onClick={handleAutoDetect} disabled={isScanning} title="Auto Detect Subnet">
               <Search size={16} />
             </button>
+            {!isValidIpRange(ipRange) && ipRange !== '' && (
+              <span style={{ position: 'absolute', top: '100%', left: '0', color: 'var(--status-dead)', fontSize: '11px', marginTop: '2px' }}>Formato inválido</span>
+            )}
           </div>
-          <button className="cyber-btn" onClick={handleScan} disabled={isScanning}>
+          <button className="cyber-btn" onClick={handleScan} disabled={isScanning || !isValidIpRange(ipRange)}>
             <Play size={18} /> {isScanning ? 'Scanning...' : 'Start'}
           </button>
           <button className="cyber-btn danger" onClick={handleStop} disabled={!isScanning}>

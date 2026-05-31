@@ -67,6 +67,11 @@ func StartScan(ips []string, cfg ScanConfig, onResult func(DeviceInfo), onProgre
 		threads = 16
 	}
 
+	const maxAllowedThreads = 256
+	if threads > maxAllowedThreads {
+		threads = maxAllowedThreads
+	}
+
 	var processed int32
 
 	for i := 0; i < threads; i++ {

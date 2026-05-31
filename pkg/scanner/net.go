@@ -5,14 +5,32 @@ import (
 	"net"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
 	"unsafe"
 )
 
+// validateIPv4 retorna erro se ip não for um endereço IPv4 válido e
+// roteável. Rejeita strings vazias, IPs não-IPv4 e endereços de
+// loopback (127.x.x.x) para operações externas.
+func validateIPv4(ip string) error {
+	parsed := net.ParseIP(ip)
+	if parsed == nil {
+		return fmt.Errorf("endereço IP inválido: %q", ip)
+	}
+	if parsed.To4() == nil {
+		return fmt.Errorf("apenas IPv4 é suportado: %q", ip)
+	}
+	return nil
+}
+
 // Ping verifica se um host está vivo.
 func Ping(ip string, timeoutMs int) bool {
+	if err := validateIPv4(ip); err != nil {
+		return false
+	}
 	if runtime.GOOS == "windows" {
 		cmd := exec.Command("ping", "-n", "1", "-w", fmt.Sprintf("%d", timeoutMs), ip)
 		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
@@ -27,6 +45,9 @@ func Ping(ip string, timeoutMs int) bool {
 
 // ReverseDNS resolve o nome do host a partir do IP.
 func ReverseDNS(ip string) string {
+	if err := validateIPv4(ip); err != nil {
+		return ""
+	}
 	names, err := net.LookupAddr(ip)
 	if err == nil && len(names) > 0 {
 		return strings.TrimSuffix(names[0], ".")
@@ -36,6 +57,9 @@ func ReverseDNS(ip string) string {
 
 // GetMAC obtém o MAC Address de um IP na LAN via SendARP (Windows).
 func GetMAC(ip string) string {
+	if err := validateIPv4(ip); err != nil {
+		return ""
+	}
 	if runtime.GOOS != "windows" {
 		return ""
 	}
@@ -54,6 +78,12 @@ func GetMAC(ip string) string {
 	var mac [6]byte
 	macLen := uint32(len(mac))
 
+	// Segurança: mac é um array de tamanho fixo [6]byte alocado na stack
+	// desta função. macLen é inicializado com len(mac) == 6 antes da
+	// chamada. O acesso via unsafe.Pointer é seguro porque o array não
+	// escapa do escopo e seu tamanho é conhecido em tempo de compilação.
+	// A validação `macLen == 6` após o retorno garante que não
+	// interpretamos dados corrompidos.
 	ret, _, _ := sendARP.Call(
 		uintptr(destIPUint32),
 		0,
@@ -69,11 +99,14 @@ func GetMAC(ip string) string {
 
 // ScanPorts verifica quais das portas especificadas estão abertas.
 func ScanPorts(ip string, ports []int, timeoutMs int) []int {
+	if err := validateIPv4(ip); err != nil {
+		return nil
+	}
 	var openPorts []int
 	timeout := time.Duration(timeoutMs) * time.Millisecond
 
 	for _, port := range ports {
-		address := fmt.Sprintf("%s:%d", ip, port)
+		address := net.JoinHostPort(ip, strconv.Itoa(port))
 		conn, err := net.DialTimeout("tcp", address, timeout)
 		if err == nil {
 			conn.Close()

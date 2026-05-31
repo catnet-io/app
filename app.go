@@ -7,6 +7,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"net"
 	"os"
+	"path/filepath"
 )
 
 // App struct
@@ -27,6 +28,17 @@ func (a *App) startup(ctx context.Context) {
 
 // StartScan wrapper for frontend
 func (a *App) StartScan(ips []string, cfg scanner.ScanConfig) error {
+	// Sanitizar configuração recebida do frontend
+	if cfg.MaxThreads <= 0 || cfg.MaxThreads > 256 {
+		cfg.MaxThreads = 16
+	}
+	if cfg.PortTimeoutMs <= 0 || cfg.PortTimeoutMs > 10000 {
+		cfg.PortTimeoutMs = 500
+	}
+	if cfg.PingTimeoutMs <= 0 || cfg.PingTimeoutMs > 10000 {
+		cfg.PingTimeoutMs = 1000
+	}
+
 	// We emit events to the frontend whenever a device is scanned
 	onResult := func(di scanner.DeviceInfo) {
 		runtime.EventsEmit(a.ctx, "scan_result", di)
@@ -125,21 +137,34 @@ func (a *App) ExportResults(devices []scanner.DeviceInfo) (string, error) {
 		},
 	}
 
-	filepath, err := runtime.SaveFileDialog(a.ctx, options)
-	if err != nil || filepath == "" {
+	savePath, err := runtime.SaveFileDialog(a.ctx, options)
+	if err != nil || savePath == "" {
 		return "", err
+	}
+
+	// Sanitizar e validar o caminho retornado pelo diálogo
+	cleanPath := filepath.Clean(savePath)
+	if cleanPath != savePath {
+		return "", fmt.Errorf("caminho de arquivo inválido")
+	}
+	// Garantir que o arquivo não está em diretório do sistema
+	// (validação básica — o diálogo nativo já restringe, mas
+	// este check adiciona defesa em profundidade)
+	dir := filepath.Dir(cleanPath)
+	if dir == "" || dir == "." {
+		return "", fmt.Errorf("diretório de destino inválido")
 	}
 
 	var data string
 	
-	if len(filepath) > 4 && filepath[len(filepath)-4:] == ".txt" {
+	if len(savePath) > 4 && savePath[len(savePath)-4:] == ".txt" {
 		data = "CatNet Scanner Results\n------------------------\n"
 		for _, d := range devices {
 			status := "Dead"
 			if d.IsAlive { status = "Alive" }
 			data += fmt.Sprintf("IP: %s | Host: %s | MAC: %s | Status: %s | Ports: %v\n", d.IP, d.Hostname, d.MAC, status, d.OpenPorts)
 		}
-	} else if len(filepath) > 4 && filepath[len(filepath)-4:] == ".xml" {
+	} else if len(savePath) > 4 && savePath[len(savePath)-4:] == ".xml" {
 		data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>\n"
 		for _, d := range devices {
 			status := "Dead"
@@ -162,6 +187,6 @@ func (a *App) ExportResults(devices []scanner.DeviceInfo) (string, error) {
 		}
 	}
 
-	err = os.WriteFile(filepath, []byte(data), 0644)
-	return filepath, err
+	err = os.WriteFile(savePath, []byte(data), 0644)
+	return savePath, err
 }

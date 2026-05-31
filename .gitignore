@@ -13,3 +13,20 @@ frontend/node_modules/
 # IDEs
 .idea/
 .vscode/
+
+# Artefatos de build e hash de verificação
+*.md5
+
+# Arquivos temporários gerados pelos testes C
+tmp_test_*.json
+tmp_test_*.csv
+tmp_test_*.txt
+tmp_test_*.bin
+
+# Notas de IA (não devem entrar no controle de versão)
+.jules/
+.kiro/
+
+# Diretório de legado (mantido localmente, não rastreado)
+legacy_c/
+tests/
