@@ -1,16 +1,54 @@
 #include "export.h"
 #include <stdio.h>
 
+static void csv_write_field(FILE* f, const char* s)
+{
+    if (!s) s = "";
+
+    // Check if we need to mitigate CSV formula injection
+    int mitigate_injection = 0;
+    if (s[0] == '=' || s[0] == '+' || s[0] == '-' || s[0] == '@' || s[0] == '\t' || s[0] == '\r') {
+        mitigate_injection = 1;
+    }
+
+    fputc('"', f);
+    if (mitigate_injection) {
+        fputc('\'', f);
+    }
+
+    for (; *s; ++s) {
+        if (*s == '"') {
+            fputs("\"\"", f);
+        } else {
+            fputc(*s, f);
+        }
+    }
+    fputc('"', f);
+}
+
 int export_results_to_file(const char* path, const DeviceList* list) {
     FILE* f = fopen(path, "w");
     if (!f) return 0;
     fprintf(f, "IP;Hostname;MAC;Status;Ports\n");
     for (size_t i=0; i<list->count; ++i) {
         const DeviceInfo* di = &list->items[i];
-        fprintf(f, "%s;%s;%s;%s;", di->ip, di->hostname[0]?di->hostname:"", di->mac[0]?di->mac:"", di->is_alive?"UP":"DOWN");
+
+        csv_write_field(f, di->ip);
+        fputc(';', f);
+        csv_write_field(f, di->hostname[0] ? di->hostname : "");
+        fputc(';', f);
+        csv_write_field(f, di->mac[0] ? di->mac : "");
+        fputc(';', f);
+
+        fprintf(f, "%s;", di->is_alive ? "UP" : "DOWN");
+
+        // Ports field
+        fputc('"', f);
         for (int p=0; p<di->open_ports_count; ++p) {
             fprintf(f, "%d%s", di->open_ports[p], (p<di->open_ports_count-1?",":""));
         }
+        fputc('"', f);
+
         fprintf(f, "\n");
     }
     fclose(f);

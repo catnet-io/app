@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 # Ensure bin/ exists
 New-Item -ItemType Directory -Force -Path "bin" | Out-Null
 
-$buildCmd = 'clang-cl /nologo /W3 /TC /D _CRT_SECURE_NO_WARNINGS /D WIN32_LEAN_AND_MEAN /I src /I tests/unity tests/test_main.c tests/test_utils.c tests/test_list.c tests/test_parse_range.c tests/test_export.c tests/unity/unity.c src/utils.c src/list.c src/range_parser.c src/export.c /Fe"bin/catnet_tests.exe" /link Ws2_32.lib'
+$buildCmd = 'clang-cl /nologo /W3 /TC /D _CRT_SECURE_NO_WARNINGS /D WIN32_LEAN_AND_MEAN /I src /I tests/unity tests/test_main.c tests/test_utils.c tests/test_list.c tests/test_parse_range.c tests/test_export.c tests/test_raylib_shims.c tests/test_scan.c tests/unity/unity.c src/utils.c src/list.c src/range_parser.c src/export.c src/raylib_shims.c src/scan.c src/net.c /Fe"bin/catnet_tests.exe" /link Ws2_32.lib Iphlpapi.lib'
 
 # Determine which compiler is available in PATH
 $cc = $null
