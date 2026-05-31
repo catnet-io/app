@@ -159,7 +159,52 @@ static void test_json_hostname_with_newline(void)
 }
 
 /* -----------------------------------------------------------------------
- * Test 5: export_results_to_file with invalid path -> returns 0
+ * Test 5: export_results_to_file with CSV injection payloads
+ * --------------------------------------------------------------------- */
+static void test_csv_export_mitigation(void)
+{
+    const char* path = "tmp_test_export_mitigation.csv";
+    DeviceList list;
+
+    // Create a device list with potentially malicious/breaking hostnames
+    device_list_init(&list);
+
+    DeviceInfo di1;
+    memset(&di1, 0, sizeof(di1));
+    strncpy(di1.ip, "10.0.0.1", sizeof(di1.ip) - 1);
+    strncpy(di1.hostname, "=cmd|' /C calc'!A0", sizeof(di1.hostname) - 1);
+    di1.is_alive = 1;
+    device_list_push(&list, &di1);
+
+    DeviceInfo di2;
+    memset(&di2, 0, sizeof(di2));
+    strncpy(di2.ip, "10.0.0.2", sizeof(di2.ip) - 1);
+    strncpy(di2.hostname, "normal;break\nnewline", sizeof(di2.hostname) - 1);
+    di2.is_alive = 1;
+    device_list_push(&list, &di2);
+
+    int ret = export_results_to_file(path, &list);
+    TEST_ASSERT_EQUAL_INT(1, ret);
+
+    char buf[1024];
+    TEST_ASSERT_EQUAL_INT(1, read_file_content(path, buf, sizeof(buf)));
+
+    // Check if the formula injection is mitigated (starts with ' inside the quotes)
+    TEST_ASSERT_NOT_NULL(strstr(buf, "\"'=cmd|' /C calc'!A0\""));
+
+    // Check if the semicolon and newline are properly enclosed in quotes
+    TEST_ASSERT_NOT_NULL(strstr(buf, "\"normal;break\nnewline\""));
+
+    // Check if IPs are quoted
+    TEST_ASSERT_NOT_NULL(strstr(buf, "\"10.0.0.1\""));
+    TEST_ASSERT_NOT_NULL(strstr(buf, "\"10.0.0.2\""));
+
+    device_list_clear(&list);
+    remove(path);
+}
+
+/* -----------------------------------------------------------------------
+ * Test 6: export_results_to_file with invalid path -> returns 0
  * --------------------------------------------------------------------- */
 static void test_csv_invalid_path_returns_zero(void)
 {
@@ -196,6 +241,7 @@ void run_test_export(void)
     RUN_TEST(test_json_single_device);
     RUN_TEST(test_json_hostname_with_quote);
     RUN_TEST(test_json_hostname_with_newline);
+    RUN_TEST(test_csv_export_mitigation);
     RUN_TEST(test_csv_invalid_path_returns_zero);
     RUN_TEST(test_json_invalid_path_returns_zero);
 }
