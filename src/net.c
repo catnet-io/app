@@ -42,8 +42,8 @@ int net_ping_ipv4(const char *ip)
     HANDLE hIcmp = IcmpCreateFile();
     if (hIcmp == INVALID_HANDLE_VALUE)
     {
-        /* Task 9.4: Log failure with GetLastError to stderr. */
-        fprintf(stderr, "net_ping_ipv4: IcmpCreateFile failed, WSA error %lu\n", GetLastError());
+        /* Task 9.4: Log failure to stderr. */
+        fprintf(stderr, "net_ping_ipv4: IcmpCreateFile failed\n");
         return 0;
     }
 
@@ -101,8 +101,8 @@ int net_reverse_dns(const char *ip, char *hostname, size_t hostsz)
                          NULL, 0, NI_NOFQDN);
     if (rc != 0)
     {
-        /* Task 9.4: Log getnameinfo failure code to stderr. */
-        fprintf(stderr, "net_reverse_dns: getnameinfo failed, code %d\n", rc);
+        /* Task 9.4: Log getnameinfo failure to stderr. */
+        fprintf(stderr, "net_reverse_dns: getnameinfo failed\n");
         hostname[0] = '\0';
         return 0;
     }
@@ -141,8 +141,7 @@ static int connect_with_timeout(const char *ip, int port, int timeout_ms)
     if (s == INVALID_SOCKET)
     {
         /* Task 9.4: Log socket creation failure. */
-        fprintf(stderr, "connect_with_timeout: socket() failed, WSA error %d\n",
-                WSAGetLastError());
+        fprintf(stderr, "connect_with_timeout: socket() failed\n");
         return 0;
     }
 
