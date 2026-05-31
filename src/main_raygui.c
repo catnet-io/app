@@ -91,17 +91,6 @@ static void gui_log_clear(void) {
     LeaveCriticalSection(&g_log_cs);
 }
 
-static void gui_log_snapshot(char out[][160], int* count, int max_lines) {
-    if (!out || !count || !g_log_cs_initialized) return;
-    EnterCriticalSection(&g_log_cs);
-    int n = g_log_count < 256 ? g_log_count : 256;
-    if (n > max_lines) n = max_lines;
-    for (int i = 0; i < n; ++i)
-        safe_strcpy(out[i], 160, g_log_lines[i]);
-    *count = n;
-    LeaveCriticalSection(&g_log_cs);
-}
-
 /* --- Admin privilege check --- */
 static bool check_is_admin(void) {
     BOOL isAdmin = FALSE;
