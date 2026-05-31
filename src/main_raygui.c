@@ -16,11 +16,17 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+// Pre-undefine conflicting macros before including windows.h
+#define NOGDI // Avoids Rectangle, TextOut, etc.
+#define NOUSER // Avoids CloseWindow, ShowCursor, DrawTextEx, etc.
+
 #include <windows.h>
-// Undefine Win32 CloseWindow so raylib's version is used in this translation unit
-#ifdef CloseWindow
+
+// Undefine Win32 macros just in case they slipped through
 #undef CloseWindow
-#endif
+#undef DrawTextEx
+#undef ShowCursor
+#undef Rectangle
 
 #include "app.h"
 #include "scan.h"
@@ -199,19 +205,19 @@ const int splitBarH = padding;  // Vertical gap equals global padding
     ui.is_admin = check_is_admin();
     gui_log_init();
 
-    // --- Pre-calculate static text measurements ---
+    // --- Pre-compute Static Text Measurements ---
     const float fontSize = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
     const float fontSpacing = (float)GuiGetStyle(DEFAULT, TEXT_SPACING);
     Font df = GetFontDefault();
 
-    Vector2 tQuick = MeasureTextEx(df, "Quick Tools", fontSize, fontSpacing);
-    Vector2 tRange = MeasureTextEx(df, "IP Range/CIDR:", fontSize, fontSpacing);
-    Vector2 tAuto = MeasureTextEx(df, "Auto-fill from primary subnet", fontSize, fontSpacing);
-    Vector2 tStart = MeasureTextEx(df, "Scan on startup", fontSize, fontSpacing);
+    Vector2 tQuick  = MeasureTextEx(df, "Quick Tools", fontSize, fontSpacing);
+    Vector2 tRange  = MeasureTextEx(df, "IP Range/CIDR:", fontSize, fontSpacing);
+    Vector2 tAuto   = MeasureTextEx(df, "Auto-fill from primary subnet", fontSize, fontSpacing);
+    Vector2 tStart  = MeasureTextEx(df, "Scan on startup", fontSize, fontSpacing);
     Vector2 tTarget = MeasureTextEx(df, "Target IP:", fontSize, fontSpacing);
-    Vector2 tPing = MeasureTextEx(df, "Ping", fontSize, fontSpacing);
-    Vector2 tDns = MeasureTextEx(df, "DNS Query", fontSize, fontSpacing);
-    Vector2 tPort = MeasureTextEx(df, "Port Scan", fontSize, fontSpacing);
+    Vector2 tPing   = MeasureTextEx(df, "Ping", fontSize, fontSpacing);
+    Vector2 tDns    = MeasureTextEx(df, "DNS Query", fontSize, fontSpacing);
+    Vector2 tPort   = MeasureTextEx(df, "Port Scan", fontSize, fontSpacing);
 
     // --- Main loop ---
     while (!WindowShouldClose())
