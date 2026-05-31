@@ -4,54 +4,54 @@
   <img src="frontend/src/assets/nyan.png" width="200" alt="CatNet Scanner Logo">
 </p>
 
-O **CatNet Scanner** é um scanner de rede incrivelmente rápido e estiloso, desenvolvido para quem busca a agilidade de um software de linha de comando com a beleza de um dashboard Cyberpunk/SOC.
+**CatNet Scanner** is an incredibly fast and stylish network scanner, built for anyone who wants the agility of a command-line tool with the beauty of a Cyberpunk/SOC dashboard.
 
-Construído sobre o robusto ecosistema **Go** e empacotado através do **Wails** usando **React/TypeScript**, o CatNet fornece detecção massivamente paralela sem engasgos na interface. O foco? Destronar softwares clássicos como o Angry IP Scanner entregando mais performance, sem Java, num binário único.
+Built on the robust **Go** ecosystem and packaged via **Wails** using **React/TypeScript**, CatNet delivers massively parallel detection without UI lag. The goal? To offer a modern, high-performance alternative to classic tools like Angry IP Scanner—without Java, in a single standalone binary.
 
 ---
 
 ## 🌟 Features (v0.4.0)
 
-- ⚡ **Scan Brutalmente Paralelo**: Feito inteiramente com Goroutines, scaneia sub-redes inteiras numa fração de segundo.
-- 🎨 **Cyberpunk UI**: Uma interface React moderna usando vidro translúcido (*Glassmorphism*), linhas néon, grids responsivos e animações sutis. E claro, com o Nyan Cat puxando a sua barra de progresso.
-- 📡 **Auto-Detect Inteligente**: Carrega instantaneamente a sub-rede (`/24`) da sua interface de rede principal ao inicializar.
-- 💾 **Exportação Prática**: Salve relatórios em formato `CSV`, `TXT` ou `XML` com um simples clique.
-- 🛠️ **Arquitetura Desacoplada**: Motor de rede seguro em Go e interface rica e desacoplada em React, empacotados em um único arquivo `.exe` stand-alone.
+- ⚡ **Brutally Parallel Scan**: Built entirely with Goroutines, scanning entire subnets in a fraction of a second.
+- 🎨 **Cyberpunk UI**: A modern React interface using translucent glass (*Glassmorphism*), neon lines, responsive grids, and subtle animations. And of course, with Nyan Cat pulling your progress bar.
+- 📡 **Smart Auto-Detect**: Instantly loads the `/24` subnet of your main network interface on startup.
+- 💾 **Practical Export**: Save reports in `CSV`, `TXT`, or `XML` format with a single click.
+- 🛠️ **Decoupled Architecture**: Secure Go network engine and rich, decoupled React UI, packaged into a single standalone `.exe` file.
 
-## 🚀 Próximas Implementações
+## 🚀 Upcoming Features
 
-Consulte o nosso [`ROADMAP.md`](ROADMAP.md) para ver para onde estamos caminhando. Recursos como Perfis de Scan, Openers Customizáveis (SSH, RDP) e Resolução Vendor OUI já estão no forno.
+Check our [`ROADMAP.md`](ROADMAP.md) to see where we're heading. Features like Scan Profiles, Custom Openers (SSH, RDP), and Vendor OUI Resolution are already in the works.
 
-## ⚙️ Compilação e Desenvolvimento
+## ⚙️ Building and Development
 
-O CatNet Scanner utiliza o Wails. Você não precisa instalar dependências pesadas do React ou Node caso queira apenas compilar o backend.
+CatNet Scanner uses Wails. You don't need to install heavy React or Node dependencies if you only want to compile the backend.
 
-### Pré-requisitos
+### Prerequisites
 - [Go 1.20+](https://go.dev/dl/)
-- [Bun](https://bun.sh/) (Gerenciador de pacotes rápido para o frontend)
+- [Bun](https://bun.sh/) (fast frontend package manager)
 - [Wails CLI](https://wails.io/docs/gettingstarted/installation)
 
-### Instalando o Wails
+### Installing Wails
 ```bash
 go install github.com/wailsapp/wails/v2/cmd/wails@latest
 ```
 
-### Rodando em Ambiente de Desenvolvimento (Live Reload)
-Para modificar a UI ou o Go com live-reload, use:
+### Running in Development Environment (Live Reload)
+To modify the UI or Go code with live-reload, use:
 ```bash
 wails dev
 ```
 
-### Gerando o Executável de Produção
-Para compilar a versão final stand-alone, execute:
+### Generating the Production Executable
+To compile the final standalone version, run:
 ```bash
 wails build -clean
 ```
-O executável final estará disponível em `build/bin/catnet.exe`.
+The final executable will be available at `build/bin/catnet.exe`.
 
 ---
 
-## 🤝 Contribuindo
-Sugestões são bem-vindas. Sinta-se livre para abrir Issues de novas ferramentas que você gostaria de ver na aba "Quick Tools" ou reportar bugs de UI.
+## 🤝 Contributing
+Suggestions are welcome. Feel free to open Issues for new tools you'd like to see in the "Quick Tools" tab or report UI bugs.
 
-> Copyright © 2026 Mendsec. Criado por Fabio Mendes.
+> Copyright © 2026 Mendsec. Created by Fábio Mendes.
