@@ -210,6 +210,20 @@ const int splitBarH = padding;  // Vertical gap equals global padding
     ui.is_admin = check_is_admin();
     gui_log_init();
 
+    // --- Pre-calculate static text measurements ---
+    const float fontSize = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
+    const float fontSpacing = (float)GuiGetStyle(DEFAULT, TEXT_SPACING);
+    Font df = GetFontDefault();
+
+    Vector2 tQuick = MeasureTextEx(df, "Quick Tools", fontSize, fontSpacing);
+    Vector2 tRange = MeasureTextEx(df, "IP Range/CIDR:", fontSize, fontSpacing);
+    Vector2 tAuto = MeasureTextEx(df, "Auto-fill from primary subnet", fontSize, fontSpacing);
+    Vector2 tStart = MeasureTextEx(df, "Scan on startup", fontSize, fontSpacing);
+    Vector2 tTarget = MeasureTextEx(df, "Target IP:", fontSize, fontSpacing);
+    Vector2 tPing = MeasureTextEx(df, "Ping", fontSize, fontSpacing);
+    Vector2 tDns = MeasureTextEx(df, "DNS Query", fontSize, fontSpacing);
+    Vector2 tPort = MeasureTextEx(df, "Port Scan", fontSize, fontSpacing);
+
     // --- Main loop ---
     while (!WindowShouldClose())
     {
@@ -261,7 +275,6 @@ const int splitBarH = padding;  // Vertical gap equals global padding
         currentX += 90 + itemSpacing;
         if (GuiButton((Rectangle){ currentX, padding, 110, 26 }, "Clear Log")) { gui_log_clear(); }
         currentX += 110 + itemSpacing;
-        Vector2 tQuick = MeasureTextEx(GetFontDefault(), "Quick Tools", (float)GuiGetStyle(DEFAULT, TEXT_SIZE), (float)GuiGetStyle(DEFAULT, TEXT_SPACING));
         float quickW = tQuick.x + 24; // extra padding to avoid truncation
         if (GuiButton((Rectangle){ currentX, padding, quickW, 26 }, "Quick Tools")) {
             ui.quick_tools_expanded = !ui.quick_tools_expanded;
@@ -285,17 +298,12 @@ const int splitBarH = padding;  // Vertical gap equals global padding
         GuiGroupBox(configArea, "Scan Configuration");
         float cx = configArea.x + padding;
         float cy = configArea.y + padding + 6;
-        const float fontSize = (float)GuiGetStyle(DEFAULT, TEXT_SIZE);
-        const float fontSpacing = (float)GuiGetStyle(DEFAULT, TEXT_SPACING);
-        Font df = GetFontDefault();
-        Vector2 tRange = MeasureTextEx(df, "IP Range/CIDR:", fontSize, fontSpacing);
         GuiLabel((Rectangle){ cx, cy+2, tRange.x + 6, 24 }, "IP Range/CIDR:");
         float cfgTextW = configArea.width - padding*3 - (tRange.x + 6) - 360; // leave room for checkboxes
         if (cfgTextW < 320) cfgTextW = 320;
         if (GuiTextBox((Rectangle){ cx + (tRange.x + 6), cy, cfgTextW, 28 }, ui.ip_range_text, sizeof(ui.ip_range_text), ui.ip_range_edit)) { ui.ip_range_edit = !ui.ip_range_edit; }
         float cbx = cx + (tRange.x + 6) + cfgTextW + itemSpacing;
         const char* autoTxt = "Auto-fill from primary subnet";
-        Vector2 tAuto = MeasureTextEx(df, autoTxt, fontSize, fontSpacing);
         Vector2 mouse = GetMousePosition();
         Vector2 autoDot = (Vector2){ cbx + 10, cy + 11 };
         DrawCircleV(autoDot, 6.0f, ui.auto_fill_subnet ? LIME : RED);
@@ -303,7 +311,6 @@ const int splitBarH = padding;  // Vertical gap equals global padding
         if (CheckCollisionPointRec(mouse, (Rectangle){ cbx, cy, 22, 22 }) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) ui.auto_fill_subnet = !ui.auto_fill_subnet;
         cy += 22 + itemSpacing;
         const char* startTxt = "Scan on startup";
-        Vector2 tStart = MeasureTextEx(df, startTxt, fontSize, fontSpacing);
         Vector2 startDot = (Vector2){ cx + 10, cy + 11 };
         DrawCircleV(startDot, 6.0f, ui.scan_on_startup ? LIME : RED);
         if (GuiLabelButton((Rectangle){ cx + 24, cy, tStart.x, 22 }, startTxt)) ui.scan_on_startup = !ui.scan_on_startup;
@@ -317,7 +324,6 @@ const int splitBarH = padding;  // Vertical gap equals global padding
         float qx = quickArea.x + padding;
         float qy = quickArea.y + padding + 8;
         const float octetW = 60.0f; const float dotW = 10.0f; const float fieldH = 26.0f;
-        Vector2 tTarget = MeasureTextEx(df, "Target IP:", fontSize, fontSpacing);
         GuiLabel((Rectangle){ qx, qy+2, tTarget.x + 6, fieldH }, "Target IP:");
         qx += tTarget.x + 6;
         Rectangle r1 = (Rectangle){ qx, qy, octetW, fieldH };
@@ -365,7 +371,6 @@ const int splitBarH = padding;  // Vertical gap equals global padding
         }
         snprintf(ui.quick_ip_text, sizeof(ui.quick_ip_text), "%s.%s.%s.%s", ui.ip_q[0], ui.ip_q[1], ui.ip_q[2], ui.ip_q[3]);
         qx += octetW + itemSpacing;
-        Vector2 tPing = MeasureTextEx(df, "Ping", fontSize, fontSpacing);
         float pingW = tPing.x + 20;
         if (GuiButton((Rectangle){ qx, qy, pingW, 26 }, "Ping")) {
             if (ui.quick_tools_active_mode) { gui_log_clear(); }
@@ -374,7 +379,6 @@ const int splitBarH = padding;  // Vertical gap equals global padding
             gui_log_push(msg, NULL);
         }
         qx += pingW + itemSpacing;
-        Vector2 tDns = MeasureTextEx(df, "DNS Query", fontSize, fontSpacing);
         float dnsW = tDns.x + 24;
         if (GuiButton((Rectangle){ qx, qy, dnsW, 26 }, "DNS Query")) {
             if (ui.quick_tools_active_mode) { gui_log_clear(); }
@@ -384,7 +388,6 @@ const int splitBarH = padding;  // Vertical gap equals global padding
             gui_log_push(msg, NULL);
         }
         qx += dnsW + itemSpacing;
-        Vector2 tPort = MeasureTextEx(df, "Port Scan", fontSize, fontSpacing);
         float portW = tPort.x + 24;
         if (GuiButton((Rectangle){ qx, qy, portW, 26 }, "Port Scan")) {
             if (ui.quick_tools_active_mode) { gui_log_clear(); }
