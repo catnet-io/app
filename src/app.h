@@ -2,8 +2,8 @@
 #define APP_H
 
 #include <stddef.h>
-
 /* app.h não depende de headers do Windows; evitar conflitos com Raylib */
+#include <stddef.h>
 
 typedef struct {
     char ip[64];
