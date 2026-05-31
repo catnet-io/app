@@ -3,3 +3,6 @@ frontend/wailsjs/** linguist-generated=true
 
 # Ignorar o código C legado nas estatísticas (já que não é o produto atual)
 legacy_c/** linguist-generated=true
+
+# Ignorar o arquivo index.html base nas estatísticas
+frontend/index.html linguist-generated=true
