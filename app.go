@@ -1,13 +1,15 @@
 package main
 
 import (
+	"catnet_scanner_wails/pkg/exporter"
 	"catnet_scanner_wails/pkg/scanner"
 	"context"
 	"fmt"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"net"
 	"os"
 	"path/filepath"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -155,38 +157,21 @@ func (a *App) ExportResults(devices []scanner.DeviceInfo) (string, error) {
 		return "", fmt.Errorf("diretório de destino inválido")
 	}
 
-	var data string
+	var data []byte
+	var formatErr error
 	
 	if len(savePath) > 4 && savePath[len(savePath)-4:] == ".txt" {
-		data = "CatNet Scanner Results\n------------------------\n"
-		for _, d := range devices {
-			status := "Dead"
-			if d.IsAlive { status = "Alive" }
-			data += fmt.Sprintf("IP: %s | Host: %s | MAC: %s | Status: %s | Ports: %v\n", d.IP, d.Hostname, d.MAC, status, d.OpenPorts)
-		}
+		data, formatErr = exporter.ExportTXT(devices)
 	} else if len(savePath) > 4 && savePath[len(savePath)-4:] == ".xml" {
-		data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<results>\n"
-		for _, d := range devices {
-			status := "Dead"
-			if d.IsAlive { status = "Alive" }
-			data += fmt.Sprintf("\t<device>\n\t\t<ip>%s</ip>\n\t\t<hostname>%s</hostname>\n\t\t<mac>%s</mac>\n\t\t<status>%s</status>\n\t</device>\n", d.IP, d.Hostname, d.MAC, status)
-		}
-		data += "</results>"
+		data, formatErr = exporter.ExportXML(devices)
 	} else {
-		// Default to CSV
-		data = "IP,Hostname,MAC,Status,Open Ports\n"
-		for _, d := range devices {
-			status := "Dead"
-			if d.IsAlive { status = "Alive" }
-			ports := ""
-			for i, p := range d.OpenPorts {
-				if i > 0 { ports += ";" }
-				ports += fmt.Sprintf("%d", p)
-			}
-			data += fmt.Sprintf("%s,%s,%s,%s,%s\n", d.IP, d.Hostname, d.MAC, status, ports)
-		}
+		data, formatErr = exporter.ExportCSV(devices)
 	}
 
-	err = os.WriteFile(savePath, []byte(data), 0644)
+	if formatErr != nil {
+		return "", formatErr
+	}
+
+	err = os.WriteFile(savePath, data, 0644)
 	return savePath, err
 }

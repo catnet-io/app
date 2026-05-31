@@ -26,6 +26,7 @@ type ScanConfig struct {
 // Global state for parallel scanning
 var (
 	isScanning atomic.Bool
+	scanMu     sync.Mutex
 	cancelScan context.CancelFunc
 )
 
@@ -47,8 +48,16 @@ func StartScan(ips []string, cfg ScanConfig, onResult func(DeviceInfo), onProgre
 	defer isScanning.Store(false)
 
 	ctx, cancel := context.WithCancel(context.Background())
+	scanMu.Lock()
 	cancelScan = cancel
-	defer cancel()
+	scanMu.Unlock()
+	
+	defer func() {
+		scanMu.Lock()
+		cancelScan = nil
+		scanMu.Unlock()
+		cancel()
+	}()
 
 	total := len(ips)
 	if total == 0 {
@@ -112,6 +121,8 @@ func StartScan(ips []string, cfg ScanConfig, onResult func(DeviceInfo), onProgre
 
 // StopScan cancels the ongoing scan
 func StopScan() {
+	scanMu.Lock()
+	defer scanMu.Unlock()
 	if cancelScan != nil {
 		cancelScan()
 	}
