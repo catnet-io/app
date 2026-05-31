@@ -19,7 +19,6 @@ static void test_scan_config_init(void)
     TEST_ASSERT_EQUAL_INT(139, cfg.default_ports[3]);
     TEST_ASSERT_EQUAL_INT(445, cfg.default_ports[4]);
     TEST_ASSERT_EQUAL_INT(3389, cfg.default_ports[5]);
-
     TEST_ASSERT_EQUAL_INT(500, cfg.port_timeout_ms);
 }
 
