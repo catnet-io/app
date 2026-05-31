@@ -13,7 +13,7 @@ jobs:
           - os: windows-latest
             platform: windows/amd64
             name: catnet-windows.exe
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             platform: linux/amd64
             name: catnet-linux
           - os: macos-latest
@@ -37,7 +37,7 @@ jobs:
 
     - name: Install Linux Dependencies
       if: runner.os == 'Linux'
-      run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+      run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev
 
     - name: Build Wails App
       run: wails build -platform ${{ matrix.platform }}
