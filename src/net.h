@@ -1,6 +1,7 @@
 #ifndef NET_H
 #define NET_H
 
+#include <stddef.h>
 #include "app.h"
 // Avoid including Windows SDK headers here; keep this header lightweight
 // to prevent symbol conflicts in UI translation units.
