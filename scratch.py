@@ -1,6 +1,6 @@
 import json
 try:
-    with open('annotations.json', encoding='utf-16') as f:
+    with open('pr24_test_annotations.json', encoding='utf-16') as f:
         data = json.load(f)
     print(data)
 except Exception as e:
