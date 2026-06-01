@@ -55,3 +55,29 @@ O PR #23 foi aberto pelo Dependabot (que atualizou o `setup-bun` para v2). Por p
 **Solução Aplicada:**
 - Feito o merge da `main` para dentro da branch do PR #24 para puxar as correções de código recentes.
 - Adicionado explicitamente `CGO_ENABLED: 1` no step `Test` dentro de `ci.yml` para assegurar a disponibilidade do CGO ao rodar os testes.
+
+---
+
+### 4. PR #24 - Falha no `go mod verify` (Conflito de Versão do Go)
+
+**Sintoma:** O CI passou a falhar logo na etapa `go mod verify` com o erro: `go: go.mod requires go >= 1.25.10 (running go 1.23.12; GOTOOLCHAIN=local)`.
+
+**Causa Raiz:** 
+Após atualizar a versão do Go no `go.mod` para `1.25.10` na branch `main` e realizar o merge dessa branch no PR #24, a versão exigida pelo projeto deixou de ser compatível com a versão configurada nas Github Actions (`1.23`). O step `setup-go@v6` define por padrão a variável de ambiente `GOTOOLCHAIN=local`, que impede o Go de baixar automaticamente a toolchain necessária para a versão exigida. Sendo assim, o ambiente continuou forçando a versão `1.23`, que se recusou a construir módulos que exigem a versão `1.25.10`.
+
+**Solução Aplicada:**
+- Alterado o parâmetro `go-version` (e `go-version-input`) nos arquivos `.github/workflows/ci.yml`, `.github/workflows/govulncheck.yml` e `.github/workflows/release.yml` de `'1.23'` para `'1.25.x'`. Isso garante que o runner do CI instale e utilize a versão do Go compatível com o arquivo `go.mod`.
+
+---
+
+### 5. PR #25 e PR #26 - Falha no Snyk (Dependabot Secrets - Recorrência)
+
+**Sintoma:** Semelhante ao PR #23, os jobs `snyk-go` e `snyk-frontend` falharam com `401 Unauthorized` (Erro de Autenticação SNYK-0005) nestes PRs.
+
+**Causa Raiz:** 
+Como os PRs #25 e #26 também foram criados pelo Dependabot (para atualizar as actions `actions/upload-artifact` e `actions/download-artifact`), eles recaem na mesma limitação de segurança do GitHub Actions: não ter acesso aos "Repository Secrets". Consequentemente, o token do Snyk fica inacessível.
+
+**Solução Aplicada:**
+- Feito um commit vazio (`git commit --allow-empty`) a partir de uma conta mantenedora do projeto diretamente nas branches dos PRs.
+- Isso reiniciou o CI rodando sob o contexto de um membro mantenedor, permitindo que a Action consumisse o token corretamente.
+- *(Reforça a necessidade de adicionar o token aos "Dependabot Secrets" para evitar retrabalho futuro).*
