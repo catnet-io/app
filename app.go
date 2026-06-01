@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -160,9 +161,9 @@ func (a *App) ExportResults(devices []scanner.DeviceInfo) (string, error) {
 	var data []byte
 	var formatErr error
 	
-	if len(savePath) > 5 && savePath[len(savePath)-5:] == ".json" {
+	if strings.ToLower(filepath.Ext(savePath)) == ".json" {
 		data, formatErr = exporter.ExportJSON(devices)
-	} else if len(savePath) > 4 && savePath[len(savePath)-4:] == ".xml" {
+	} else if strings.ToLower(filepath.Ext(savePath)) == ".xml" {
 		data, formatErr = exporter.ExportXML(devices)
 	} else {
 		data, formatErr = exporter.ExportCSV(devices)

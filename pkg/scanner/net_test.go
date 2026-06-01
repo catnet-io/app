@@ -16,7 +16,7 @@ func TestValidateIPv4(t *testing.T) {
 		{"Invalid empty", "", true},
 		{"Invalid string", "invalid-ip", true},
 		{"Invalid IPv6", "2001:0db8:85a3:0000:0000:8a2e:0370:7334", true},
-		{"Invalid loopback", "127.0.0.1", false}, // Wait, current validateIPv4 allows loopback, comment in function says rejects but code doesn't check loopback. We'll test false for now.
+		{"Valid loopback", "127.0.0.1", false}, // Loopback is allowed for local scanning and testing
 		{"Invalid out of range", "256.256.256.256", true},
 	}
 

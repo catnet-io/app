@@ -46,3 +46,22 @@ func TestExportXML(t *testing.T) {
 		t.Errorf("Expected escaped XML but got: %s", str)
 	}
 }
+
+func TestExportJSON(t *testing.T) {
+	devices := []scanner.DeviceInfo{
+		{IP: "192.168.1.1", Hostname: "router", MAC: "AA-BB-CC-DD-EE-FF", IsAlive: true, OpenPorts: []int{80, 443}},
+	}
+
+	out, err := ExportJSON(devices)
+	if err != nil {
+		t.Fatalf("ExportJSON failed: %v", err)
+	}
+
+	str := string(out)
+	if !strings.Contains(str, `"ip": "192.168.1.1"`) {
+		t.Errorf("JSON output missing IP: %s", str)
+	}
+	if !strings.Contains(str, `"openPorts": [`) {
+		t.Errorf("JSON output missing OpenPorts array: %s", str)
+	}
+}
