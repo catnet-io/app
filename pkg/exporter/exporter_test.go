@@ -30,7 +30,7 @@ func TestExportCSV(t *testing.T) {
 	}
 
 	// CSV Injection tests
-	if !strings.Contains(str, "\"'=cmd") {
+	if !strings.Contains(str, ",'=cmd") {
 		t.Errorf("CSV injection not mitigated: %s", str)
 	}
 }
