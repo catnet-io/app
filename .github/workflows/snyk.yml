@@ -18,7 +18,7 @@ jobs:
         with:
           args: --all-projects
 
-  snyk-node:
+  snyk-frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,10 +29,10 @@ jobs:
       - name: Install dependencies
         working-directory: frontend
         run: bun install
-      - name: Run Snyk to check Node vulnerabilities
-        uses: snyk/actions/node@master
+      - name: Setup Snyk
+        uses: snyk/actions/setup@master
+      - name: Run Snyk to check Bun vulnerabilities
+        working-directory: frontend
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          command: test
-          args: --file=frontend/package.json
+        run: snyk test --file=package.json
