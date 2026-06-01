@@ -53,6 +53,16 @@ func ExportXML(devices []scanner.DeviceInfo) ([]byte, error) {
 	return data, nil
 }
 
+func sanitizeCSVField(field string) string {
+	if len(field) > 0 {
+		firstChar := field[0]
+		if firstChar == '=' || firstChar == '+' || firstChar == '-' || firstChar == '@' || firstChar == '\t' || firstChar == '\r' {
+			return "'" + field
+		}
+	}
+	return field
+}
+
 func ExportCSV(devices []scanner.DeviceInfo) ([]byte, error) {
 	var buf bytes.Buffer
 	writer := csv.NewWriter(&buf)
@@ -73,7 +83,9 @@ func ExportCSV(devices []scanner.DeviceInfo) ([]byte, error) {
 		}
 		ports := strings.Join(strPorts, ";")
 
-		err = writer.Write([]string{d.IP, d.Hostname, d.MAC, status, ports})
+		hostname := sanitizeCSVField(d.Hostname)
+
+		err = writer.Write([]string{d.IP, hostname, d.MAC, status, ports})
 		if err != nil {
 			return nil, err
 		}
