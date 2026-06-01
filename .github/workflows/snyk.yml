@@ -1,0 +1,40 @@
+name: Snyk Security
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  snyk-go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Mock frontend dist
+        run: mkdir -p frontend/dist; echo "mock" > frontend/dist/index.html
+      - name: Run Snyk to check Go vulnerabilities
+        uses: snyk/actions/golang@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --file=go.mod
+
+  snyk-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        working-directory: frontend
+        run: bun install
+      - name: Setup Snyk
+        uses: snyk/actions/setup@master
+      - name: Run Snyk to check Bun vulnerabilities
+        working-directory: frontend
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk test --file=package.json
