@@ -14,6 +14,14 @@
 
 Built on the robust **Go** ecosystem and packaged via **Wails** using **React/TypeScript**, CatNet delivers massively parallel detection without UI lag. The goal? To offer a modern, high-performance alternative to classic tools like Angry IP Scanner—without Java, in a single standalone binary.
 
+## 📸 Interface Preview
+
+<p align="center">
+  <img src="docs/images/catnet_scanner_ui.png" alt="CatNet Scanner - Cyberpunk UI Running">
+  <br>
+  <em>CatNet Scanner featuring a Glassmorphism Cyberpunk UI with a real-time Nyan Cat progress bar</em>
+</p>
+
 ---
 
 ## 🌟 Features (v0.4.0)
