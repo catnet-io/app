@@ -1,13 +1,7 @@
-# Screenshots
+# CatNet Scanner Screenshots
 
-Add UI screenshots here and reference them from `README.md`.
+This directory contains screenshots of the current web-based React/Wails application interface.
 
-Suggested filename for v0.2:
+* **dashboard.png**: The modern, dark-mode dashboard interface of CatNet Scanner.
 
-- `ui-v0.2.png`
-
-Example link:
-
-```
-![UI Screenshot](docs/screenshots/ui-v0.2.png)
-```
+*(Note: Older screenshots related to the legacy C-Raylib interface have been moved to the `legacy/c-raylib` branch)*
