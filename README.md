@@ -23,7 +23,7 @@ Built on the robust **Go** ecosystem and packaged via **Wails** using **React/Ty
 
 
 
-## 🌟 Features (v0.4.0)
+## 🌟 Features (v0.4.1)
 
 - ⚡ **Brutally Parallel Scan**: Built entirely with Goroutines, scanning entire subnets in a fraction of a second.
 - 🎨 **Cyberpunk UI**: A modern React interface using translucent glass (*Glassmorphism*), neon lines, responsive grids, and subtle animations. And of course, with Nyan Cat pulling your progress bar.
