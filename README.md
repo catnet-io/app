@@ -1,6 +1,20 @@
 # CatNet Scanner
 
 <p align="center">
+  <a href="https://github.com/mendsec/catnet_scanner/actions/workflows/ci.yml">
+    <img src="https://github.com/mendsec/catnet_scanner/actions/workflows/ci.yml/badge.svg" alt="CI Status">
+  </a>
+  <a href="https://github.com/mendsec/catnet_scanner/actions/workflows/govulncheck.yml">
+    <img src="https://github.com/mendsec/catnet_scanner/actions/workflows/govulncheck.yml/badge.svg" alt="Govulncheck Status">
+  </a>
+  <a href="https://github.com/mendsec/catnet_scanner/actions/workflows/snyk.yml">
+    <img src="https://github.com/mendsec/catnet_scanner/actions/workflows/snyk.yml/badge.svg" alt="Snyk Security Status">
+  </a>
+  <a href="https://github.com/mendsec/catnet_scanner/network/dependencies">
+    <img src="https://badgen.net/github/dependabot/mendsec/catnet_scanner" alt="Dependabot Status">
+  </a>
+</p>
+<p align="center">
   <img src="frontend/src/assets/nyan.png" width="200" alt="CatNet Scanner Logo">
 </p>
 
@@ -17,6 +31,15 @@ Built on the robust **Go** ecosystem and packaged via **Wails** using **React/Ty
 - 📡 **Smart Auto-Detect**: Instantly loads the `/24` subnet of your main network interface on startup.
 - 💾 **Practical Export**: Save reports in `JSON`, `CSV`, or `XML` format with a single click.
 - 🛠️ **Decoupled Architecture**: Secure Go network engine and rich, decoupled React UI, packaged into a single standalone `.exe` file.
+
+## 🛡️ Enterprise-Grade Security & Quality
+
+CatNet Scanner is built with a zero-trust, enterprise-grade security pipeline that runs autonomously via GitHub Actions. We employ top-tier security agents to guarantee the integrity of our codebase:
+
+- **Snyk Security (SCA & SAST)**: Continuously scans both Go and React (Bun) dependencies for vulnerabilities. Snyk also performs static application security testing (SAST) to identify code-level flaws.
+- **Govulncheck**: Google's official vulnerability scanner actively monitors our Go standard library and module dependencies against the Go vulnerability database.
+- **Dependabot**: Proactively keeps our open-source supply chain updated by creating automated PRs whenever patches are released.
+- **Automated CI/CD**: Every pull request must pass a rigorous matrix of builds and tests, ensuring that only verified, secure code is merged.
 
 ## 🚀 Upcoming Features
 
