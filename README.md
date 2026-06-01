@@ -21,8 +21,6 @@ Built on the robust **Go** ecosystem and packaged via **Wails** using **React/Ty
   <em>CatNet Scanner scanning a subnet with its real-time Glassmorphism UI.</em>
 </p>
 
-
-
 ## 🌟 Features (v0.4.1)
 
 - ⚡ **Brutally Parallel Scan**: Built entirely with Goroutines, scanning entire subnets in a fraction of a second.
