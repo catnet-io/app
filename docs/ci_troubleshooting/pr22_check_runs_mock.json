@@ -1,0 +1,24 @@
+{
+    "check_runs": [
+        {
+            "id": 78784682003,
+            "name": "snyk-go",
+            "conclusion": "failure",
+            "output": {
+                "title": "Snyk check failed",
+                "summary": "Process completed with exit code 2.",
+                "annotations_url": "https://api.github.com/repos/mendsec/catnet_scanner/check-runs/78784682003/annotations"
+            }
+        },
+        {
+            "id": 78784681961,
+            "name": "govulncheck",
+            "conclusion": "failure",
+            "output": {
+                "title": "govulncheck failed",
+                "summary": "Process completed with exit code 1. Pattern frontend/dist: no matching files found.",
+                "annotations_url": "https://api.github.com/repos/mendsec/catnet_scanner/check-runs/78784681961/annotations"
+            }
+        }
+    ]
+}
