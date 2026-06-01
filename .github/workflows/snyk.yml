@@ -10,7 +10,7 @@ jobs:
   snyk-go:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Mock frontend dist
         run: mkdir -p frontend/dist; echo "mock" > frontend/dist/index.html
       - name: Run Snyk to check Go vulnerabilities
@@ -23,7 +23,7 @@ jobs:
   snyk-frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
