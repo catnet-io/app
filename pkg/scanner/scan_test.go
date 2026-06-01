@@ -1,9 +1,9 @@
 package scanner
 
 import (
+	"sync"
 	"sync/atomic"
 	"testing"
-	"time"
 )
 
 func TestScanConcurrency(t *testing.T) {
@@ -17,8 +17,12 @@ func TestScanConcurrency(t *testing.T) {
 	cfg.PortTimeoutMs = 10
 	
 	var count int32
+	started := make(chan struct{})
+	var once sync.Once
+
 	onResult := func(di DeviceInfo) {
 		atomic.AddInt32(&count, 1)
+		once.Do(func() { close(started) })
 	}
 	
 	// Run StartScan in a goroutine
@@ -28,8 +32,8 @@ func TestScanConcurrency(t *testing.T) {
 		close(done)
 	}()
 	
-	// Give it a tiny bit of time to start and acquire lock
-	time.Sleep(5 * time.Millisecond)
+	// Wait for scan to actually start
+	<-started
 	
 	// StopScan should safely cancel without data races
 	StopScan()

@@ -8,9 +8,9 @@ import (
 	"time"
 )
 
-// validateIPv4 retorna erro se ip não for um endereço IPv4 válido e
-// roteável. Rejeita strings vazias, IPs não-IPv4 e endereços de
-// loopback (127.x.x.x) para operações externas.
+// validateIPv4 retorna erro se ip não for um endereço IPv4 válido.
+// Rejeita strings vazias e IPs não-IPv4. Endereços de loopback
+// (127.x.x.x) são permitidos para varreduras e testes locais.
 func validateIPv4(ip string) error {
 	parsed := net.ParseIP(ip)
 	if parsed == nil {

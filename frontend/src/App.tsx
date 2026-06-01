@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import './index.css';
 import { StartScan, StopScan, ParseRange, ExportResults, GetLocalIPRange } from '../wailsjs/go/main/App';
 import { EventsOn, EventsOff } from '../wailsjs/runtime/runtime';
-import { Play, Square, Activity, Terminal, Download, Search } from 'lucide-react';
+import { Play, Square, Terminal, Download, Search } from 'lucide-react';
 import nyanImg from './assets/nyan.png';
 
 interface DeviceInfo {
