@@ -1,6 +1,6 @@
 module catnet_scanner_wails
 
-go 1.24.4
+go 1.24.6
 
 require github.com/wailsapp/wails/v2 v2.12.0
 
