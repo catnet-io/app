@@ -67,3 +67,17 @@ Após atualizar a versão do Go no `go.mod` para `1.25.10` na branch `main` e re
 
 **Solução Aplicada:**
 - Alterado o parâmetro `go-version` (e `go-version-input`) nos arquivos `.github/workflows/ci.yml`, `.github/workflows/govulncheck.yml` e `.github/workflows/release.yml` de `'1.23'` para `'1.25.x'`. Isso garante que o runner do CI instale e utilize a versão do Go compatível com o arquivo `go.mod`.
+
+---
+
+### 5. PR #25 - Falha no Snyk (Dependabot Secrets - Recorrência)
+
+**Sintoma:** Semelhante ao PR #23, os jobs `snyk-go` e `snyk-frontend` falharam com `401 Unauthorized` (Erro de Autenticação SNYK-0005).
+
+**Causa Raiz:** 
+Como o PR #25 também foi criado pelo Dependabot (para atualizar a action `actions/upload-artifact` para a v7), ele recai na mesma limitação de segurança do GitHub Actions: não ter acesso aos "Repository Secrets". Consequentemente, o token do Snyk fica inacessível.
+
+**Solução Aplicada:**
+- Feito um commit vazio (`git commit --allow-empty`) a partir de uma conta mantenedora do projeto diretamente na branch do PR (`dependabot/github_actions/actions/upload-artifact-7`).
+- Isso reiniciou o CI rodando sob o contexto de um membro mantenedor, permitindo que a Action consumisse o token corretamente.
+- *(Reforça a necessidade de adicionar o token aos "Dependabot Secrets" para evitar retrabalho futuro).*
