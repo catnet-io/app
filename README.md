@@ -16,12 +16,12 @@ Built on the robust **Go** ecosystem and packaged via **Wails** using **React/Ty
 ## 📸 Interface Preview
 
 <p align="center">
-  <img src="docs/images/catnet_scanner_ui.png" alt="CatNet Scanner - Cyberpunk UI Running">
+  <img src="docs/screenshots/dashboard_v0.4.1.png" alt="CatNet Scanner - UI Preview">
   <br>
-  <em>CatNet Scanner featuring a Glassmorphism Cyberpunk UI with a real-time Nyan Cat progress bar</em>
+  <em>CatNet Scanner scanning a subnet with its real-time Glassmorphism UI.</em>
 </p>
 
----
+
 
 ## 🌟 Features (v0.4.0)
 
