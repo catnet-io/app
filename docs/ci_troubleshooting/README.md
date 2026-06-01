@@ -70,14 +70,14 @@ Após atualizar a versão do Go no `go.mod` para `1.25.10` na branch `main` e re
 
 ---
 
-### 5. PR #25 - Falha no Snyk (Dependabot Secrets - Recorrência)
+### 5. PR #25 e PR #26 - Falha no Snyk (Dependabot Secrets - Recorrência)
 
-**Sintoma:** Semelhante ao PR #23, os jobs `snyk-go` e `snyk-frontend` falharam com `401 Unauthorized` (Erro de Autenticação SNYK-0005).
+**Sintoma:** Semelhante ao PR #23, os jobs `snyk-go` e `snyk-frontend` falharam com `401 Unauthorized` (Erro de Autenticação SNYK-0005) nestes PRs.
 
 **Causa Raiz:** 
-Como o PR #25 também foi criado pelo Dependabot (para atualizar a action `actions/upload-artifact` para a v7), ele recai na mesma limitação de segurança do GitHub Actions: não ter acesso aos "Repository Secrets". Consequentemente, o token do Snyk fica inacessível.
+Como os PRs #25 e #26 também foram criados pelo Dependabot (para atualizar as actions `actions/upload-artifact` e `actions/download-artifact`), eles recaem na mesma limitação de segurança do GitHub Actions: não ter acesso aos "Repository Secrets". Consequentemente, o token do Snyk fica inacessível.
 
 **Solução Aplicada:**
-- Feito um commit vazio (`git commit --allow-empty`) a partir de uma conta mantenedora do projeto diretamente na branch do PR (`dependabot/github_actions/actions/upload-artifact-7`).
+- Feito um commit vazio (`git commit --allow-empty`) a partir de uma conta mantenedora do projeto diretamente nas branches dos PRs.
 - Isso reiniciou o CI rodando sob o contexto de um membro mantenedor, permitindo que a Action consumisse o token corretamente.
 - *(Reforça a necessidade de adicionar o token aos "Dependabot Secrets" para evitar retrabalho futuro).*
