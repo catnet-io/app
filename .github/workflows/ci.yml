@@ -15,7 +15,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v6
       with:
-        go-version: '1.23' # Use a version that supports wails requirements
+        go-version: '1.25.x' # Use a version that supports wails requirements
 
     - name: Verify dependencies
       run: go mod verify
