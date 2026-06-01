@@ -6,3 +6,6 @@ legacy_c/** linguist-generated=true
 
 # Ignorar o arquivo index.html base nas estatísticas
 frontend/index.html linguist-generated=true
+
+# Ignorar os logs de troubleshooting para estatísticas de linguagem
+docs/ci_troubleshooting/** linguist-vendored=true
