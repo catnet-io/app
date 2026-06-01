@@ -1,9 +1,9 @@
 # CatNet Scanner
 
 <p align="center">
-  <a href="https://github.com/mendsec/catnet_scanner/actions/workflows/ci.yml"><img src="https://github.com/mendsec/catnet_scanner/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
-  <a href="https://github.com/mendsec/catnet_scanner/actions/workflows/govulncheck.yml"><img src="https://github.com/mendsec/catnet_scanner/actions/workflows/govulncheck.yml/badge.svg" alt="Govulncheck Status"></a>
-  <a href="https://github.com/mendsec/catnet_scanner/actions/workflows/snyk.yml"><img src="https://github.com/mendsec/catnet_scanner/actions/workflows/snyk.yml/badge.svg" alt="Snyk Security Status"></a>
+  <a href="https://github.com/mendsec/catnet_scanner/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/mendsec/catnet_scanner/ci.yml?branch=develop&label=CI&logo=github" alt="CI Status"></a>
+  <a href="https://github.com/mendsec/catnet_scanner/actions/workflows/govulncheck.yml"><img src="https://img.shields.io/github/actions/workflow/status/mendsec/catnet_scanner/govulncheck.yml?branch=develop&label=Govulncheck&logo=github" alt="Govulncheck Status"></a>
+  <a href="https://github.com/mendsec/catnet_scanner/actions/workflows/snyk.yml"><img src="https://img.shields.io/github/actions/workflow/status/mendsec/catnet_scanner/snyk.yml?branch=develop&label=Snyk%20Security&logo=github" alt="Snyk Security Status"></a>
   <img src="https://img.shields.io/badge/Dependabot-Active-brightgreen?logo=dependabot" alt="Dependabot Active">
 </p>
 <p align="center">
