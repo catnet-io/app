@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Mock frontend dist
-        run: mkdir -p frontend/dist
+        run: mkdir -p frontend/dist; echo "mock" > frontend/dist/index.html
       - name: Run Snyk to check Go vulnerabilities
         uses: snyk/actions/golang@master
         env:
