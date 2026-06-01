@@ -4,6 +4,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 )
 
 func TestScanConcurrency(t *testing.T) {
@@ -32,13 +33,14 @@ func TestScanConcurrency(t *testing.T) {
 		close(done)
 	}()
 	
-	// Wait for scan to actually start
-	<-started
-	
-	// StopScan should safely cancel without data races
+	// Dar tempo para o scan iniciar, depois cancelar
+	time.Sleep(20 * time.Millisecond)
 	StopScan()
 	
-	<-done
-	
-	// No panic, no race condition detected (if run with -race)
+	select {
+	case <-done:
+		// ok
+	case <-time.After(5 * time.Second):
+		t.Fatal("StartScan did not return after StopScan within timeout")
+	}
 }

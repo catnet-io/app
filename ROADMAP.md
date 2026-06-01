@@ -14,6 +14,7 @@ This document traces the path from current stabilization to competitive commerci
 - [x] **Decoupled Architecture**: Implement Wails to serve the compiled binary without depending on external Node.js servers.
 - [x] **Auto-detect IP Range**: Smart and automatic detection of the active interface's subnet (`/24`).
 - [x] **Base Export**: Export scans in JSON, CSV, and XML formats.
+- [x] **Table Sorting (Sort)**: Click on column headers (IP, Status, Hostname) to sort data alphabetically or numerically.
 
 ---
 
@@ -22,7 +23,6 @@ This document traces the path from current stabilization to competitive commerci
 
 - [ ] **Scan Profiles**: Allow saving "Favorite Ranges" for 1-click access (e.g., Guest Network, Servers Network).
 - [ ] **Vendor OUI Lookup**: Resolve network card manufacturers offline based on the first octets of the MAC Address.
-- [x] **Table Sorting (Sort)**: Click on column headers (IP, Status, Hostname) to sort data alphabetically or numerically.
 - [ ] **Host Side Panel**: Upon clicking a specific IP in the main table, open a side/bottom panel displaying more details (full MAC, ping rate, manufacturer).
 - [ ] **Audio Feedback (Optional)**: Small discrete sounds for scan started and finished (cyberpunk theme).
 

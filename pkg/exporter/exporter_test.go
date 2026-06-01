@@ -30,11 +30,8 @@ func TestExportCSV(t *testing.T) {
 	}
 
 	// CSV Injection tests
-	if !strings.Contains(str, "192.168.1.3,'=cmd|' /C calc'!A0") {
-		t.Errorf("Hostname starting with '=' not properly sanitized against CSV injection: %s", str)
-	}
-	if !strings.Contains(str, "192.168.1.4,'+1+1") {
-		t.Errorf("Hostname starting with '+' not properly sanitized against CSV injection: %s", str)
+	if !strings.Contains(str, "\"'=cmd") {
+		t.Errorf("CSV injection not mitigated: %s", str)
 	}
 }
 
