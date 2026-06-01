@@ -8,7 +8,6 @@
 </p>
 <p align="center">
   <img src="frontend/src/assets/nyan.png" width="200" alt="CatNet Scanner Logo">
-</p>
 
 **CatNet Scanner** is an incredibly fast and stylish network scanner, built for anyone who wants the agility of a command-line tool with the beauty of a Cyberpunk/SOC dashboard.
 
