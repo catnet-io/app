@@ -32,10 +32,8 @@ jobs:
     - name: Vet
       run: go vet ./...
 
-    - name: Set up MinGW
-      uses: egor-tensin/setup-mingw@v2
-      with:
-        platform: x64
+    - name: Add MinGW to PATH
+      run: echo "C:\msys64\mingw64\bin" >> $env:GITHUB_PATH
 
     - name: Test
       env:
