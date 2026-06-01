@@ -161,13 +161,16 @@ function App() {
               onChange={e => setIpRange(e.target.value)}
               disabled={isScanning}
               placeholder="IP Range / CIDR"
+              aria-label="IP Range or CIDR"
+              aria-invalid={!isValidIpRange(ipRange) && ipRange !== '' ? 'true' : 'false'}
+              aria-describedby={!isValidIpRange(ipRange) && ipRange !== '' ? 'ip-error-msg' : undefined}
               style={{ borderColor: !isValidIpRange(ipRange) && ipRange !== '' ? 'var(--status-dead)' : undefined }}
             />
-            <button className="icon-btn" onClick={handleAutoDetect} disabled={isScanning} title="Auto Detect Subnet">
+            <button className="icon-btn" onClick={handleAutoDetect} disabled={isScanning} title="Auto Detect Subnet" aria-label="Auto Detect Subnet">
               <Search size={16} />
             </button>
             {!isValidIpRange(ipRange) && ipRange !== '' && (
-              <span style={{ position: 'absolute', top: '100%', left: '0', color: 'var(--status-dead)', fontSize: '11px', marginTop: '2px' }}>Formato inválido</span>
+              <span id="ip-error-msg" role="alert" style={{ position: 'absolute', top: '100%', left: '0', color: 'var(--status-dead)', fontSize: '11px', marginTop: '2px' }}>Invalid format</span>
             )}
           </div>
           <button className="cyber-btn" onClick={handleScan} disabled={isScanning || !isValidIpRange(ipRange)}>
