@@ -11,12 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Mock frontend dist
+        run: mkdir -p frontend/dist
       - name: Run Snyk to check Go vulnerabilities
         uses: snyk/actions/golang@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --all-projects
+          args: --file=go.mod
 
   snyk-frontend:
     runs-on: ubuntu-latest
