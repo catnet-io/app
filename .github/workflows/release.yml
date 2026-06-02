@@ -79,7 +79,7 @@ jobs:
         awk "/## \[$VERSION_NO_V\]/{flag=1; print; next} /## \[/{if(flag) exit} flag" CHANGELOG.md > RELEASE_NOTES.md
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v3
       with:
         files: artifacts/**/*
         body_path: RELEASE_NOTES.md
