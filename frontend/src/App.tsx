@@ -5,33 +5,26 @@ import { EventsOn, EventsOff } from '../wailsjs/runtime/runtime';
 import { Play, Square, Terminal, Download, Search } from 'lucide-react';
 import nyanImg from './assets/nyan.png';
 
-interface DeviceInfo {
-  ip: string;
-  isAlive: boolean;
-  hostname: string;
-  mac: string;
-  openPortsCount: number;
-  openPorts: number[];
-}
+// Import new generated models
+import { results, profile } from '../wailsjs/go/models';
 
 function App() {
   const [ipRange, setIpRange] = useState('192.168.1.1-254');
-  const [devices, setDevices] = useState<DeviceInfo[]>([]);
+  const [devices, setDevices] = useState<results.HostResult[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState<{time: string, msg: string}[]>([]);
 
   // Sorting state
-  const [sortCol, setSortCol] = useState<keyof DeviceInfo | ''>('');
+  const [sortCol, setSortCol] = useState<keyof results.HostResult | ''>('');
   const [sortAsc, setSortAsc] = useState(true);
 
-  // Valida se a string é um range IP ou CIDR válido antes de enviar
-  // ao backend. Não substitui a validação do backend.
+  // Valida se a string é um range IP ou CIDR válido antes de enviar ao backend
   const isValidIpRange = (value: string): boolean => {
     const cidrPattern = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/;
-    const dashPattern =
-      /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}-(\d{1,3}|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/;
-    return cidrPattern.test(value) || dashPattern.test(value);
+    const dashPattern = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}-(\d{1,3}|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/;
+    const singlePattern = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
+    return cidrPattern.test(value) || dashPattern.test(value) || singlePattern.test(value);
   };
 
   const logsEndRef = useRef<HTMLDivElement>(null);
@@ -62,8 +55,9 @@ function App() {
       setProgress(p);
     });
 
-    EventsOn("scan_result", (di: DeviceInfo) => {
-      setDevices(prev => [...prev, di]);
+    EventsOn("scan_result", (host: any) => {
+      // Guarantee it maps cleanly to HostResult structure
+      setDevices(prev => [...prev, new results.HostResult(host)]);
     });
 
     return () => {
@@ -96,12 +90,16 @@ function App() {
       }
 
       addLog(`Found ${ips.length} IPs to scan.`);
-      const config = {
-        defaultPorts: [22, 80, 443, 3389],
-        portTimeoutMs: 500,
-        pingTimeoutMs: 1000,
-        maxThreads: 16
-      };
+      const config = profile.ScanProfile.createFrom({
+        name: "default",
+        discovery_mode: "icmp+tcp",
+        concurrency: 64,
+        timeout_ms: 1000,
+        resolve_dns: true,
+        resolve_mac: true,
+        export_formats: ["json"],
+        ports: [22, 80, 443, 139, 445, 3389]
+      });
       
       StartScan(ips, config).catch(err => addLog(`Scan error: ${err}`));
     } catch (e) {
@@ -114,7 +112,7 @@ function App() {
     addLog("Stop signal sent");
   };
 
-  const handleSort = (col: keyof DeviceInfo) => {
+  const handleSort = (col: keyof results.HostResult) => {
     if (sortCol === col) {
       setSortAsc(!sortAsc);
     } else {
@@ -125,8 +123,18 @@ function App() {
 
   const sortedDevices = [...devices].sort((a, b) => {
     if (!sortCol) return 0;
-    const aVal = a[sortCol];
-    const bVal = b[sortCol];
+    
+    // Helper to extract comparable values
+    let aVal: any = a[sortCol];
+    let bVal: any = b[sortCol];
+    
+    // Sort array lengths (e.g. open_ports) instead of arrays directly
+    if (Array.isArray(aVal)) aVal = aVal.length;
+    if (Array.isArray(bVal)) bVal = bVal.length;
+    
+    if (aVal === undefined) aVal = "";
+    if (bVal === undefined) bVal = "";
+
     if (aVal < bVal) return sortAsc ? -1 : 1;
     if (aVal > bVal) return sortAsc ? 1 : -1;
     return 0;
@@ -135,6 +143,7 @@ function App() {
   const handleExport = async () => {
     if (devices.length === 0) return;
     try {
+      // ExportResults expects the updated HostResult slice now
       const path = await ExportResults(devices);
       if (path) addLog(`Exported results to: ${path}`);
     } catch (e) {
@@ -201,7 +210,7 @@ function App() {
               <th>Status</th>
               <th onClick={() => handleSort('hostname')}>Hostname {sortCol === 'hostname' && (sortAsc ? '▲' : '▼')}</th>
               <th onClick={() => handleSort('ip')}>IP {sortCol === 'ip' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('openPortsCount')}>Ports {sortCol === 'openPortsCount' && (sortAsc ? '▲' : '▼')}</th>
+              <th onClick={() => handleSort('open_ports')}>Ports {sortCol === 'open_ports' && (sortAsc ? '▲' : '▼')}</th>
               <th onClick={() => handleSort('mac')}>MAC {sortCol === 'mac' && (sortAsc ? '▲' : '▼')}</th>
             </tr>
           </thead>
@@ -209,11 +218,11 @@ function App() {
             {sortedDevices.map((dev, i) => (
               <tr key={i}>
                 <td>
-                  <span className={`status-dot ${dev.isAlive ? 'status-alive' : 'status-dead'}`}></span>
+                  <span className={`status-dot ${dev.alive ? 'status-alive' : 'status-dead'}`}></span>
                 </td>
                 <td>{dev.hostname || '--'}</td>
                 <td>{dev.ip}</td>
-                <td>{dev.openPorts?.join(', ') || 'None'}</td>
+                <td>{dev.open_ports?.join(', ') || 'None'}</td>
                 <td>{dev.mac || '--'}</td>
               </tr>
             ))}
