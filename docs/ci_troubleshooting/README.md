@@ -81,3 +81,17 @@ Como os PRs #25 e #26 também foram criados pelo Dependabot (para atualizar as a
 - Feito um commit vazio (`git commit --allow-empty`) a partir de uma conta mantenedora do projeto diretamente nas branches dos PRs.
 - Isso reiniciou o CI rodando sob o contexto de um membro mantenedor, permitindo que a Action consumisse o token corretamente.
 - *(Reforça a necessidade de adicionar o token aos "Dependabot Secrets" para evitar retrabalho futuro).*
+
+---
+
+### 6. PR #27 - Falha nos Workflows após Migração para Multi-Repo
+
+**Sintoma:** Os workflows `release.yml`, `govulncheck.yml` e `snyk.yml` começaram a falhar com erros de "module not found" (falha ao resolver a diretiva `replace` de `../catnet-core`) e/ou conflito de versão do Go (`go.mod requires go >= 1.26.3`).
+
+**Causa Raiz:** 
+Durante a mudança arquitetural para "The CatNet Ecosystem", o repositório adotou um padrão multi-repo (workspace) que inseriu a diretiva `replace github.com/mendsec/catnet-core => ../catnet-core` no `go.mod`. Na branch `develop`, o checkout duplo foi implementado em `ci.yml`, mas não foi propagado para os demais workflows. Consequentemente, esses actions executavam no diretório raiz sem clonar a dependência principal lado-a-lado. Além disso, as definições do `go-version` nestes workflows divergiram do novo baseline da aplicação.
+
+**Solução Aplicada:**
+- **Checkouts Multi-repo:** Alteramos `release.yml`, `govulncheck.yml` e `snyk.yml` para realizar o checkout de ambos os repositórios (`catnet-scanner` e `catnet-core`) usando a flag `path:`, espelhando a configuração correta do `ci.yml`.
+- **Redirecionamento de Diretório (Working Directory):** Adicionamos as propriedades de `working-directory: catnet-scanner` (ou o prefixo `catnet-scanner/` em campos específicos de Custom Actions como `work-dir` e `args: --file=...`) aos passos de compilação, Snyk, Govulncheck, e extração de release para que operem sob o diretório local onde o projeto foi clonado.
+- **Normalização do Go:** Atualizamos `go-version` e `go-version-input` de todos os actions para a nova baseline (`1.26.x`), resolvendo qualquer downgrade assíncrono ocorrido nos merges entre `main` e `develop`.

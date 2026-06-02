@@ -23,11 +23,13 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.26.x'
           
       - name: Backend test
         working-directory: catnet-scanner
-        run: go test ./...
+        env:
+          CGO_ENABLED: 1
+        run: go test -race -v ./...
 
   frontend:
     runs-on: ubuntu-latest
