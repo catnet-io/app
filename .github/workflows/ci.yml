@@ -1,39 +1,66 @@
-﻿name: CI
+name: CI
 
 on:
   push:
+    branches: [ "main", "develop" ]
   pull_request:
 
 jobs:
   backend:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout catnet-scanner
         uses: actions/checkout@v4
+        with:
+          path: catnet-scanner
+
+      - name: Checkout catnet-core
+        uses: actions/checkout@v4
+        with:
+          repository: mendsec/catnet-core
+          path: catnet-core
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: '1.26.x'
+          
+      - name: Install Linux Dependencies
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+
+      - name: Mock frontend dist
+        working-directory: catnet-scanner
+        run: mkdir -p frontend/dist; echo "mock" > frontend/dist/index.html
 
       - name: Backend test
-        run: go test ./...
+        working-directory: catnet-scanner
+        env:
+          CGO_ENABLED: 1
+        run: go test -race -v ./...
 
   frontend:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout catnet-scanner
         uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          path: catnet-scanner
+
+      - name: Checkout catnet-core
+        uses: actions/checkout@v4
+        with:
+          repository: mendsec/catnet-core
+          path: catnet-core
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
 
       - name: Install dependencies
-        working-directory: frontend
-        run: npm ci
+        working-directory: catnet-scanner/frontend
+        run: bun install
 
       - name: Build frontend
-        working-directory: frontend
-        run: npm run build
+        working-directory: catnet-scanner/frontend
+        run: bun run build

@@ -10,31 +10,48 @@ jobs:
   snyk-go:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout catnet-scanner
+        uses: actions/checkout@v6
+        with:
+          path: catnet-scanner
+      - name: Checkout catnet-core
+        uses: actions/checkout@v6
+        with:
+          repository: mendsec/catnet-core
+          path: catnet-core
       - name: Mock frontend dist
+        working-directory: catnet-scanner
         run: mkdir -p frontend/dist; echo "mock" > frontend/dist/index.html
       - name: Run Snyk to check Go vulnerabilities
         uses: snyk/actions/golang@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --file=go.mod
+          args: --file=catnet-scanner/go.mod
 
   snyk-frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout catnet-scanner
+        uses: actions/checkout@v6
+        with:
+          path: catnet-scanner
+      - name: Checkout catnet-core
+        uses: actions/checkout@v6
+        with:
+          repository: mendsec/catnet-core
+          path: catnet-core
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
       - name: Install dependencies
-        working-directory: frontend
+        working-directory: catnet-scanner/frontend
         run: bun install
       - name: Setup Snyk
         uses: snyk/actions/setup@master
       - name: Run Snyk to check Bun vulnerabilities
-        working-directory: frontend
+        working-directory: catnet-scanner/frontend
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: snyk test --file=package.json

@@ -81,3 +81,31 @@ Como os PRs #25 e #26 também foram criados pelo Dependabot (para atualizar as a
 - Feito um commit vazio (`git commit --allow-empty`) a partir de uma conta mantenedora do projeto diretamente nas branches dos PRs.
 - Isso reiniciou o CI rodando sob o contexto de um membro mantenedor, permitindo que a Action consumisse o token corretamente.
 - *(Reforça a necessidade de adicionar o token aos "Dependabot Secrets" para evitar retrabalho futuro).*
+
+---
+
+### 6. PR #27 - Falha nos Workflows após Migração para Multi-Repo
+
+**Sintoma:** Os workflows `release.yml`, `govulncheck.yml` e `snyk.yml` começaram a falhar com erros de "module not found" (falha ao resolver a diretiva `replace` de `../catnet-core`) e/ou conflito de versão do Go (`go.mod requires go >= 1.26.3`).
+
+**Causa Raiz:** 
+Durante a mudança arquitetural para "The CatNet Ecosystem", o repositório adotou um padrão multi-repo (workspace) que inseriu a diretiva `replace github.com/mendsec/catnet-core => ../catnet-core` no `go.mod`. Na branch `develop`, o checkout duplo foi implementado em `ci.yml`, mas não foi propagado para os demais workflows. Consequentemente, esses actions executavam no diretório raiz sem clonar a dependência principal lado-a-lado. Além disso, as definições do `go-version` nestes workflows divergiram do novo baseline da aplicação.
+
+**Solução Aplicada:**
+- **Checkouts Multi-repo:** Alteramos `release.yml`, `govulncheck.yml` e `snyk.yml` para realizar o checkout de ambos os repositórios (`catnet-scanner` e `catnet-core`) usando a flag `path:`, espelhando a configuração correta do `ci.yml`.
+- **Redirecionamento de Diretório (Working Directory):** Adicionamos as propriedades de `working-directory: catnet-scanner` (ou o prefixo `catnet-scanner/` em campos específicos de Custom Actions como `work-dir` e `args: --file=...`) aos passos de compilação, Snyk, Govulncheck, e extração de release para que operem sob o diretório local onde o projeto foi clonado.
+- **Normalização do Go:** Atualizamos `go-version` e `go-version-input` de todos os actions para a nova baseline (`1.26.x`), resolvendo qualquer downgrade assíncrono ocorrido nos merges entre `main` e `develop`.
+
+---
+
+### 7. PR #28 - Falhas Ocultas em CGO e Dependências Nativas no Ubuntu 24.04
+
+**Sintoma:** Após estabilizar os checkouts, o backend test continuou falhando na Action de CI, reclamando ora que `gcc` não estava disponível para a compilação paralela com a flag `-race`, ora com o pacote de WebKit resultando em `Exit code 100` (`Unable to locate package libwebkit2gtk-4.0-dev`).
+
+**Causa Raiz:** 
+1. **Runner `ubuntu-latest` (Noble Numbat):** O GitHub migrou os runners de `ubuntu-latest` para Ubuntu 24.04, o qual substituiu totalmente o pacote `libwebkit2gtk-4.0-dev` pela versão mais moderna `libwebkit2gtk-4.1-dev`. O comando estático com `-4.0-dev` quebrou imediatamente.
+2. **Dependência do Frontend Mock em Testes:** A flag `CGO_ENABLED: 1` obrigou o runner a cruzar dependências de C. Como usamos _Wails_, isso gerou dependência real no GTK. Além disso, o teste `go test` verificava a integridade de `//go:embed all:frontend/dist`. Como os testes rodam em paralelo ao `bun build`, o diretório frontend mock não existia nativamente no escopo do runner backend.
+
+**Solução Aplicada:**
+- Alteramos permanentemente nos workflows (`ci.yml` e `release.yml`) a dependência instalada para `libwebkit2gtk-4.1-dev`.
+- Injetamos o script de **Mock do Frontend** antes do step de teste (`mkdir -p frontend/dist; echo "mock" > frontend/dist/index.html`) para enganar a validação do `go:embed`.
