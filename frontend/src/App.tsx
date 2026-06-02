@@ -173,13 +173,13 @@ function App() {
               <span id="ip-error-msg" role="alert" style={{ position: 'absolute', top: '100%', left: '0', color: 'var(--status-dead)', fontSize: '11px', marginTop: '2px' }}>Invalid format</span>
             )}
           </div>
-          <button className="cyber-btn" onClick={handleScan} disabled={isScanning || !isValidIpRange(ipRange)}>
+          <button className="cyber-btn" onClick={handleScan} disabled={isScanning || !isValidIpRange(ipRange)} title={isScanning ? "Scanning in progress" : !isValidIpRange(ipRange) ? "Enter a valid IP range to start scanning" : "Start scanning"}>
             <Play size={18} /> {isScanning ? 'Scanning...' : 'Start'}
           </button>
-          <button className="cyber-btn danger" onClick={handleStop} disabled={!isScanning}>
+          <button className="cyber-btn danger" onClick={handleStop} disabled={!isScanning} title={!isScanning ? "No scan in progress" : "Stop scanning"}>
             <Square size={18} /> Stop
           </button>
-          <button className="cyber-btn" onClick={handleExport} disabled={isScanning || devices.length === 0} style={{ borderColor: 'var(--text-muted)', color: 'var(--text-muted)' }}>
+          <button className="cyber-btn" onClick={handleExport} disabled={isScanning || devices.length === 0} style={{ borderColor: 'var(--text-muted)', color: 'var(--text-muted)' }} title={isScanning ? "Wait for scan to finish" : devices.length === 0 ? "No devices found to export" : "Export results"}>
             <Download size={18} /> Export
           </button>
         </div>
