@@ -134,10 +134,24 @@ body {
   gap: 8px;
 }
 
-.cyber-btn:hover {
+.cyber-btn:not(:disabled):hover {
   background: var(--text-highlight);
   color: var(--bg-color);
   box-shadow: 0 0 15px rgba(102, 252, 241, 0.6);
+}
+
+.cyber-btn:disabled,
+.icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: auto; /* Required to show tooltips on disabled buttons */
+}
+
+.cyber-btn:focus-visible,
+.icon-btn:focus-visible,
+.cyber-input:focus-visible {
+  outline: 2px solid var(--text-highlight);
+  outline-offset: 2px;
 }
 
 .icon-btn {
@@ -157,7 +171,7 @@ body {
   transition: all 0.3s;
 }
 
-.icon-btn:hover {
+.icon-btn:not(:disabled):hover {
   color: var(--text-highlight);
   border-color: var(--text-highlight);
 }
@@ -167,7 +181,7 @@ body {
   border-color: var(--accent-danger);
 }
 
-.cyber-btn.danger:hover {
+.cyber-btn.danger:not(:disabled):hover {
   background: var(--accent-danger);
   color: #fff;
   box-shadow: 0 0 15px rgba(255, 0, 85, 0.6);
