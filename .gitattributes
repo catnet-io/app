@@ -1,3 +1,7 @@
-﻿* text=auto eol=lf
+* text=auto eol=lf
 *.bat text eol=crlf
 *.cmd text eol=crlf
+
+# Ignorar o código gerado pelo Wails (JS/TS) nas estatísticas de linguagens do GitHub
+frontend/wailsjs/** linguist-generated=true
+frontend/dist/** linguist-generated=true
