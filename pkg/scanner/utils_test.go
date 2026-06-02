@@ -19,6 +19,7 @@ func TestParseRange(t *testing.T) {
 		{"Empty input", " ", 0, true},
 		{"Reversed range", "192.168.1.10-192.168.1.1", 0, true},
 		{"Range too large", "10.0.0.1-10.2.0.0", 0, true}, // > 65536 is error
+		{"CIDR too large", "10.0.0.0/8", 0, true}, // > 65536 is error
 	}
 
 	for _, tt := range tests {

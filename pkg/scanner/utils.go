@@ -36,9 +36,20 @@ func parseCIDR(cidr string) ([]string, error) {
 		return nil, err
 	}
 
+	ones, bits := ipnet.Mask.Size()
+	// Prevent DoS: if the subnet is too large (more than /16 for IPv4 or equivalent), return an error
+	// A /16 network has 65536 addresses, which is our max limit.
+	if bits-ones > 16 {
+		return nil, fmt.Errorf("CIDR range too large (max 65536)")
+	}
+
 	var ips []string
 	for ip := ip.Mask(ipnet.Mask); ipnet.Contains(ip); inc(ip) {
 		ips = append(ips, ip.String())
+		// Backup safeguard
+		if len(ips) > 65536 {
+			return nil, fmt.Errorf("CIDR range too large (max 65536)")
+		}
 	}
 
 	// Remove network address and broadcast address for standard IPv4 subnets
