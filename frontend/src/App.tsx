@@ -229,7 +229,7 @@ function App() {
             {devices.length === 0 && (
               <tr>
                 <td colSpan={5} style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
-                  Ready to scan. Awaiting input.
+                  {isScanning ? 'Scanning network...' : 'Ready to scan. Awaiting input.'}
                 </td>
               </tr>
             )}
