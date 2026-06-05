@@ -168,6 +168,14 @@ function App() {
               className="cyber-input" 
               value={ipRange}
               onChange={e => setIpRange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (!isScanning && isValidIpRange(ipRange)) {
+                    handleScan();
+                  }
+                }
+              }}
               disabled={isScanning}
               placeholder="IP Range / CIDR"
               aria-label="IP Range or CIDR"
@@ -208,10 +216,42 @@ function App() {
           <thead>
             <tr>
               <th>Status</th>
-              <th onClick={() => handleSort('hostname')}>Hostname {sortCol === 'hostname' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('ip')}>IP {sortCol === 'ip' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('open_ports')}>Ports {sortCol === 'open_ports' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('mac')}>MAC {sortCol === 'mac' && (sortAsc ? '▲' : '▼')}</th>
+              <th
+                role="button"
+                tabIndex={0}
+                aria-sort={sortCol === 'hostname' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+                onClick={() => handleSort('hostname')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('hostname'); } }}
+              >
+                Hostname {sortCol === 'hostname' && (sortAsc ? '▲' : '▼')}
+              </th>
+              <th
+                role="button"
+                tabIndex={0}
+                aria-sort={sortCol === 'ip' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+                onClick={() => handleSort('ip')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('ip'); } }}
+              >
+                IP {sortCol === 'ip' && (sortAsc ? '▲' : '▼')}
+              </th>
+              <th
+                role="button"
+                tabIndex={0}
+                aria-sort={sortCol === 'open_ports' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+                onClick={() => handleSort('open_ports')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('open_ports'); } }}
+              >
+                Ports {sortCol === 'open_ports' && (sortAsc ? '▲' : '▼')}
+              </th>
+              <th
+                role="button"
+                tabIndex={0}
+                aria-sort={sortCol === 'mac' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+                onClick={() => handleSort('mac')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('mac'); } }}
+              >
+                MAC {sortCol === 'mac' && (sortAsc ? '▲' : '▼')}
+              </th>
             </tr>
           </thead>
           <tbody>

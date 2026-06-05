@@ -1,0 +1,3 @@
+## 2024-05-24 - Accessibility for Table Headers and Form Inputs
+**Learning:** Interactive table headers used for sorting must have explicit `role="button"`, `tabIndex={0}`, and `aria-sort` attributes to be fully accessible to keyboard and screen reader users. Furthermore, input fields handling main actions should naturally support submission via the Enter key without requiring a surrounding form element, provided keydown events are handled manually.
+**Action:** When making custom components interactive (like table headers or non-form inputs), always map the `onKeyDown` events (Enter/Space) and ensure proper ARIA roles and focus-visible styling are applied.
