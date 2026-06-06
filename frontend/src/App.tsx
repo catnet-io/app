@@ -151,6 +151,27 @@ function App() {
     }
   };
 
+  const renderSortableHeader = (label: string, col: keyof results.HostResult) => {
+    const isSorted = sortCol === col;
+    const sortDirection = isSorted ? (sortAsc ? 'ascending' : 'descending') : 'none';
+
+    return (
+      <th
+        onClick={() => handleSort(col)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleSort(col);
+          }
+        }}
+        tabIndex={0}
+        aria-sort={sortDirection}
+      >
+        {label} {isSorted && (sortAsc ? '▲' : '▼')}
+      </th>
+    );
+  };
+
   return (
     <div className="app-container">
       {/* Header */}
@@ -195,7 +216,14 @@ function App() {
       </div>
 
       {isScanning && (
-        <div className="progress-container">
+        <div
+          className="progress-container"
+          role="progressbar"
+          aria-label="Scan progress"
+          aria-valuenow={Math.round(progress * 100)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
           <div className="progress-bar" style={{ width: `${progress * 100}%` }}>
             <img src={nyanImg} alt="nyan" className="nyan-cat-img" />
           </div>
@@ -208,10 +236,10 @@ function App() {
           <thead>
             <tr>
               <th>Status</th>
-              <th onClick={() => handleSort('hostname')}>Hostname {sortCol === 'hostname' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('ip')}>IP {sortCol === 'ip' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('open_ports')}>Ports {sortCol === 'open_ports' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('mac')}>MAC {sortCol === 'mac' && (sortAsc ? '▲' : '▼')}</th>
+              {renderSortableHeader('Hostname', 'hostname')}
+              {renderSortableHeader('IP', 'ip')}
+              {renderSortableHeader('Ports', 'open_ports')}
+              {renderSortableHeader('MAC', 'mac')}
             </tr>
           </thead>
           <tbody>
