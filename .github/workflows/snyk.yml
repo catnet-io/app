@@ -11,17 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout catnet-scanner
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           path: catnet-scanner
       - name: Checkout catnet-core
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           repository: mendsec/catnet-core
           path: catnet-core
       - name: Mock frontend dist
         working-directory: catnet-scanner
-        run: mkdir -p frontend/dist; echo "mock" > frontend/dist/index.html
+        run: go mod tidy && mkdir -p frontend/dist && echo "mock" > frontend/dist/index.html
       - name: Run Snyk to check Go vulnerabilities
         uses: snyk/actions/golang@master
         env:
@@ -33,11 +33,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout catnet-scanner
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           path: catnet-scanner
       - name: Checkout catnet-core
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           repository: mendsec/catnet-core
           path: catnet-core

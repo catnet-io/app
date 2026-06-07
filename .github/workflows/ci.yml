@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: catnet-scanner
+          submodules: false
 
       - name: Checkout catnet-core
         uses: actions/checkout@v4
@@ -30,13 +31,13 @@ jobs:
 
       - name: Mock frontend dist
         working-directory: catnet-scanner
-        run: mkdir -p frontend/dist; echo "mock" > frontend/dist/index.html
+        run: go mod tidy && mkdir -p frontend/dist && echo "mock" > frontend/dist/index.html
 
       - name: Backend test
         working-directory: catnet-scanner
         env:
           CGO_ENABLED: 1
-        run: go test -race -v ./...
+        run: go mod tidy && go test -race -v ./...
 
   frontend:
     runs-on: ubuntu-latest
@@ -45,6 +46,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: catnet-scanner
+          submodules: false
 
       - name: Checkout catnet-core
         uses: actions/checkout@v4

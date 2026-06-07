@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout catnet-scanner
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           path: catnet-scanner
 
       - name: Checkout catnet-core
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           repository: mendsec/catnet-core
           path: catnet-core
@@ -29,7 +29,7 @@ jobs:
       - name: Mock frontend dist
         shell: bash
         working-directory: catnet-scanner
-        run: mkdir -p frontend/dist; echo "mock" > frontend/dist/index.html
+        run: go mod tidy && mkdir -p frontend/dist && echo "mock" > frontend/dist/index.html
       
       - name: Run govulncheck
         uses: golang/govulncheck-action@v1
