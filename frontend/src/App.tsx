@@ -140,6 +140,26 @@ function App() {
     return 0;
   });
 
+  const renderSortHeader = (col: keyof results.HostResult, label: string) => {
+    const isSorted = sortCol === col;
+    return (
+      <th
+        tabIndex={0}
+        aria-sort={isSorted ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+        onClick={() => handleSort(col)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleSort(col);
+          }
+        }}
+        title={`Sort by ${label}`}
+      >
+        {label} {isSorted && (sortAsc ? '▲' : '▼')}
+      </th>
+    );
+  };
+
   const handleExport = async () => {
     if (devices.length === 0) return;
     try {
@@ -208,10 +228,10 @@ function App() {
           <thead>
             <tr>
               <th>Status</th>
-              <th onClick={() => handleSort('hostname')}>Hostname {sortCol === 'hostname' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('ip')}>IP {sortCol === 'ip' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('open_ports')}>Ports {sortCol === 'open_ports' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('mac')}>MAC {sortCol === 'mac' && (sortAsc ? '▲' : '▼')}</th>
+              {renderSortHeader('hostname', 'Hostname')}
+              {renderSortHeader('ip', 'IP')}
+              {renderSortHeader('open_ports', 'Ports')}
+              {renderSortHeader('mac', 'MAC')}
             </tr>
           </thead>
           <tbody>
