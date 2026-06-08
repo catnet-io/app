@@ -224,8 +224,14 @@ body {
   text-align: left;
 }
 
-.cyber-table th:hover {
+.cyber-table th:hover,
+.cyber-table th:focus-visible {
   color: var(--text-highlight);
+}
+
+.cyber-table th:focus-visible {
+  outline: 2px solid var(--text-highlight);
+  outline-offset: -2px;
 }
 
 .cyber-table td {
