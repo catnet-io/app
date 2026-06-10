@@ -1,0 +1,3 @@
+## 2024-06-10 - Keyboard accessibility for sortable custom headers
+**Learning:** When turning non-interactive elements like `<th>` into interactive sortable headers, basic `onClick` handling is insufficient. Keyboard users cannot access them without `tabIndex={0}`, and they won't function with Space/Enter keys unless explicitly handled via `onKeyDown`. Additionally, screen readers need `role="button"` and `aria-sort` to communicate state.
+**Action:** Always add `tabIndex={0}`, `role="button"`, `aria-sort`, `onKeyDown` handlers, and `:focus-visible` styling when making custom UI elements like table headers interactive.
