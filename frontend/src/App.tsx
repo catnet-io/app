@@ -208,10 +208,38 @@ function App() {
           <thead>
             <tr>
               <th>Status</th>
-              <th onClick={() => handleSort('hostname')}>Hostname {sortCol === 'hostname' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('ip')}>IP {sortCol === 'ip' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('open_ports')}>Ports {sortCol === 'open_ports' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('mac')}>MAC {sortCol === 'mac' && (sortAsc ? '▲' : '▼')}</th>
+              <th
+                onClick={() => handleSort('hostname')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('hostname'); } }}
+                tabIndex={0}
+                aria-sort={sortCol === 'hostname' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+              >
+                Hostname {sortCol === 'hostname' && (sortAsc ? '▲' : '▼')}
+              </th>
+              <th
+                onClick={() => handleSort('ip')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('ip'); } }}
+                tabIndex={0}
+                aria-sort={sortCol === 'ip' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+              >
+                IP {sortCol === 'ip' && (sortAsc ? '▲' : '▼')}
+              </th>
+              <th
+                onClick={() => handleSort('open_ports')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('open_ports'); } }}
+                tabIndex={0}
+                aria-sort={sortCol === 'open_ports' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+              >
+                Ports {sortCol === 'open_ports' && (sortAsc ? '▲' : '▼')}
+              </th>
+              <th
+                onClick={() => handleSort('mac')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort('mac'); } }}
+                tabIndex={0}
+                aria-sort={sortCol === 'mac' ? (sortAsc ? 'ascending' : 'descending') : 'none'}
+              >
+                MAC {sortCol === 'mac' && (sortAsc ? '▲' : '▼')}
+              </th>
             </tr>
           </thead>
           <tbody>

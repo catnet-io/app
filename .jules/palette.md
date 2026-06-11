@@ -1,0 +1,3 @@
+## 2024-05-24 - Accessibility for Sortable Custom Table Headers
+**Learning:** When making `<th>` elements sortable via custom onClick handlers, it's a common anti-pattern to add `role="button"` to make them accessible. However, doing so overrides the native `columnheader` role, which breaks the semantics and prevents screen readers from announcing `aria-sort` correctly.
+**Action:** Always maintain the native table structure. Instead of `role="button"`, add `tabIndex={0}`, an `onKeyDown` handler for 'Enter' and 'Space', dynamic `aria-sort` ('ascending' | 'descending' | 'none'), and custom `:focus-visible` styling to the `<th>` elements directly.
