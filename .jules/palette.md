@@ -1,0 +1,3 @@
+## 2024-06-13 - Interactive Table Header Accessibility Constraints
+**Learning:** When making `<th>` elements interactive (e.g., for sortable columns), adding `role="button"` directly to the `<th>` destroys its native semantic role (`columnheader`). This native role is required for the `aria-sort` attribute to be valid and interpreted correctly by screen readers.
+**Action:** Always avoid `role="button"` on `<th>`. Instead, rely on native focus mechanisms (`tabIndex={0}`), custom keyboard event handlers (`onKeyDown`), visible focus styles (`:focus-visible`), and properly updated `aria-sort` values.
