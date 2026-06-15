@@ -1,0 +1,3 @@
+## 2024-06-15 - Interactive Table Header Accessibility
+**Learning:** React/TypeScript custom table headers (`<th onClick>`) acting as sort buttons are completely invisible to keyboard navigation and screen readers without manual accessibility wiring. Using `role="button"` on `<th>` overrides its native `columnheader` role, which invalidates the `aria-sort` attribute needed for conveying sort state.
+**Action:** When making custom table headers interactive, explicitly add `tabIndex={0}`, an `onKeyDown` handler (listening for 'Enter'/' '), and a dynamic `aria-sort` attribute ('ascending'|'descending'|'none'). Ensure CSS provides a visible `:focus-visible` state.
