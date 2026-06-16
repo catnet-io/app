@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import type { KeyboardEvent } from 'react';
 import './index.css';
 import { StartScan, StopScan, ParseRange, ExportResults, GetLocalIPRange } from '../wailsjs/go/main/App';
 import { EventsOn, EventsOff } from '../wailsjs/runtime/runtime';
@@ -121,6 +122,20 @@ function App() {
     }
   };
 
+  const handleKeyDownSort = (e: KeyboardEvent<HTMLTableCellElement>, col: keyof results.HostResult) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleSort(col);
+    }
+  };
+
+  const getAriaSort = (col: keyof results.HostResult) => {
+    if (sortCol === col) {
+      return sortAsc ? 'ascending' : 'descending';
+    }
+    return 'none';
+  };
+
   const sortedDevices = [...devices].sort((a, b) => {
     if (!sortCol) return 0;
     
@@ -208,10 +223,38 @@ function App() {
           <thead>
             <tr>
               <th>Status</th>
-              <th onClick={() => handleSort('hostname')}>Hostname {sortCol === 'hostname' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('ip')}>IP {sortCol === 'ip' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('open_ports')}>Ports {sortCol === 'open_ports' && (sortAsc ? '▲' : '▼')}</th>
-              <th onClick={() => handleSort('mac')}>MAC {sortCol === 'mac' && (sortAsc ? '▲' : '▼')}</th>
+              <th
+                tabIndex={0}
+                onClick={() => handleSort('hostname')}
+                onKeyDown={(e) => handleKeyDownSort(e, 'hostname')}
+                aria-sort={getAriaSort('hostname')}
+              >
+                Hostname {sortCol === 'hostname' && (sortAsc ? '▲' : '▼')}
+              </th>
+              <th
+                tabIndex={0}
+                onClick={() => handleSort('ip')}
+                onKeyDown={(e) => handleKeyDownSort(e, 'ip')}
+                aria-sort={getAriaSort('ip')}
+              >
+                IP {sortCol === 'ip' && (sortAsc ? '▲' : '▼')}
+              </th>
+              <th
+                tabIndex={0}
+                onClick={() => handleSort('open_ports')}
+                onKeyDown={(e) => handleKeyDownSort(e, 'open_ports')}
+                aria-sort={getAriaSort('open_ports')}
+              >
+                Ports {sortCol === 'open_ports' && (sortAsc ? '▲' : '▼')}
+              </th>
+              <th
+                tabIndex={0}
+                onClick={() => handleSort('mac')}
+                onKeyDown={(e) => handleKeyDownSort(e, 'mac')}
+                aria-sort={getAriaSort('mac')}
+              >
+                MAC {sortCol === 'mac' && (sortAsc ? '▲' : '▼')}
+              </th>
             </tr>
           </thead>
           <tbody>

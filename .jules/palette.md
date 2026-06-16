@@ -1,0 +1,3 @@
+## 2024-06-16 - Accessibility of interactive custom components (<th>)
+**Learning:** When making table header cells (`<th>`) interactive for sorting purposes, adding `role="button"` directly to the `<th>` elements overrides the native `columnheader` role. This invalidates the `aria-sort` attribute which is critical for screen reader compatibility for sortable tables.
+**Action:** Instead of modifying the role, simply manually implement accessibility features including `tabIndex={0}`, `onKeyDown` (handling both Enter and Space keys to mimic button behavior), `:focus-visible` styling, and `aria-sort` directly on the `<th>` elements. This preserves the table semantics while maintaining interactivity.
