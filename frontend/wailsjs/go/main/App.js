@@ -10,24 +10,8 @@ export function GetLocalIPRange() {
   return window['go']['main']['App']['GetLocalIPRange']();
 }
 
-export function GetMAC(arg1) {
-  return window['go']['main']['App']['GetMAC'](arg1);
-}
-
 export function ParseRange(arg1) {
   return window['go']['main']['App']['ParseRange'](arg1);
-}
-
-export function Ping(arg1) {
-  return window['go']['main']['App']['Ping'](arg1);
-}
-
-export function ReverseDNS(arg1) {
-  return window['go']['main']['App']['ReverseDNS'](arg1);
-}
-
-export function ScanPorts(arg1, arg2) {
-  return window['go']['main']['App']['ScanPorts'](arg1, arg2);
 }
 
 export function StartScan(arg1, arg2) {

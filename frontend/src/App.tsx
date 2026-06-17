@@ -6,17 +6,17 @@ import { Play, Square, Terminal, Download, Search } from 'lucide-react';
 import nyanImg from './assets/nyan.png';
 
 // Import new generated models
-import { results, profile } from '../wailsjs/go/models';
+import { results, engine } from '../wailsjs/go/models';
 
 function App() {
   const [ipRange, setIpRange] = useState('192.168.1.1-254');
-  const [devices, setDevices] = useState<results.HostResult[]>([]);
+  const [devices, setDevices] = useState<results.DeviceInfo[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState<{time: string, msg: string}[]>([]);
 
   // Sorting state
-  const [sortCol, setSortCol] = useState<keyof results.HostResult | ''>('');
+  const [sortCol, setSortCol] = useState<keyof results.DeviceInfo | ''>('');
   const [sortAsc, setSortAsc] = useState(true);
 
   // Valida se a string é um range IP ou CIDR válido antes de enviar ao backend
@@ -56,8 +56,8 @@ function App() {
     });
 
     EventsOn("scan_result", (host: any) => {
-      // Guarantee it maps cleanly to HostResult structure
-      setDevices(prev => [...prev, new results.HostResult(host)]);
+      // Guarantee it maps cleanly to DeviceInfo structure
+      setDevices(prev => [...prev, new results.DeviceInfo(host)]);
     });
 
     return () => {
@@ -90,15 +90,11 @@ function App() {
       }
 
       addLog(`Found ${ips.length} IPs to scan.`);
-      const config = profile.ScanProfile.createFrom({
-        name: "default",
-        discovery_mode: "icmp+tcp",
-        concurrency: 64,
-        timeout_ms: 1000,
-        resolve_dns: true,
-        resolve_mac: true,
-        export_formats: ["json"],
-        ports: [22, 80, 443, 139, 445, 3389]
+      const config = engine.ScanConfig.createFrom({
+        defaultPorts: [22, 80, 443, 139, 445, 3389],
+        portTimeoutMs: 500,
+        pingTimeoutMs: 1000,
+        maxThreads: 64
       });
       
       StartScan(ips, config).catch(err => addLog(`Scan error: ${err}`));
@@ -112,7 +108,7 @@ function App() {
     addLog("Stop signal sent");
   };
 
-  const handleSort = (col: keyof results.HostResult) => {
+  const handleSort = (col: keyof results.DeviceInfo) => {
     if (sortCol === col) {
       setSortAsc(!sortAsc);
     } else {
@@ -121,7 +117,7 @@ function App() {
     }
   };
 
-  const handleSortKeyDown = (e: KeyboardEvent<HTMLTableCellElement>, col: keyof results.HostResult) => {
+  const handleSortKeyDown = (e: KeyboardEvent<HTMLTableCellElement>, col: keyof results.DeviceInfo) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleSort(col);
@@ -217,7 +213,7 @@ function App() {
               <th>Status</th>
               <th tabIndex={0} onKeyDown={(e) => handleSortKeyDown(e, 'hostname')} aria-sort={sortCol === 'hostname' ? (sortAsc ? 'ascending' : 'descending') : 'none'} onClick={() => handleSort('hostname')}>Hostname {sortCol === 'hostname' && (sortAsc ? '▲' : '▼')}</th>
               <th tabIndex={0} onKeyDown={(e) => handleSortKeyDown(e, 'ip')} aria-sort={sortCol === 'ip' ? (sortAsc ? 'ascending' : 'descending') : 'none'} onClick={() => handleSort('ip')}>IP {sortCol === 'ip' && (sortAsc ? '▲' : '▼')}</th>
-              <th tabIndex={0} onKeyDown={(e) => handleSortKeyDown(e, 'open_ports')} aria-sort={sortCol === 'open_ports' ? (sortAsc ? 'ascending' : 'descending') : 'none'} onClick={() => handleSort('open_ports')}>Ports {sortCol === 'open_ports' && (sortAsc ? '▲' : '▼')}</th>
+              <th tabIndex={0} onKeyDown={(e) => handleSortKeyDown(e, 'openPorts')} aria-sort={sortCol === 'openPorts' ? (sortAsc ? 'ascending' : 'descending') : 'none'} onClick={() => handleSort('openPorts')}>Ports {sortCol === 'openPorts' && (sortAsc ? '▲' : '▼')}</th>
               <th tabIndex={0} onKeyDown={(e) => handleSortKeyDown(e, 'mac')} aria-sort={sortCol === 'mac' ? (sortAsc ? 'ascending' : 'descending') : 'none'} onClick={() => handleSort('mac')}>MAC {sortCol === 'mac' && (sortAsc ? '▲' : '▼')}</th>
             </tr>
           </thead>
@@ -225,11 +221,11 @@ function App() {
             {sortedDevices.map((dev, i) => (
               <tr key={i}>
                 <td>
-                  <span className={`status-dot ${dev.alive ? 'status-alive' : 'status-dead'}`}></span>
+                  <span className={`status-dot ${dev.isAlive ? 'status-alive' : 'status-dead'}`}></span>
                 </td>
                 <td>{dev.hostname || '--'}</td>
                 <td>{dev.ip}</td>
-                <td>{dev.open_ports?.join(', ') || 'None'}</td>
+                <td>{dev.openPorts?.join(', ') || 'None'}</td>
                 <td>{dev.mac || '--'}</td>
               </tr>
             ))}

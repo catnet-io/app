@@ -1,29 +1,21 @@
-export namespace profile {
+export namespace engine {
 	
-	export class ScanProfile {
-	    name: string;
-	    discovery_mode: string;
-	    timeout_ms: number;
-	    concurrency: number;
-	    resolve_dns: boolean;
-	    resolve_mac: boolean;
-	    export_formats: string[];
-	    ports?: number[];
+	export class ScanConfig {
+	    defaultPorts: number[];
+	    portTimeoutMs: number;
+	    pingTimeoutMs: number;
+	    maxThreads: number;
 	
 	    static createFrom(source: any = {}) {
-	        return new ScanProfile(source);
+	        return new ScanConfig(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.name = source["name"];
-	        this.discovery_mode = source["discovery_mode"];
-	        this.timeout_ms = source["timeout_ms"];
-	        this.concurrency = source["concurrency"];
-	        this.resolve_dns = source["resolve_dns"];
-	        this.resolve_mac = source["resolve_mac"];
-	        this.export_formats = source["export_formats"];
-	        this.ports = source["ports"];
+	        this.defaultPorts = source["defaultPorts"];
+	        this.portTimeoutMs = source["portTimeoutMs"];
+	        this.pingTimeoutMs = source["pingTimeoutMs"];
+	        this.maxThreads = source["maxThreads"];
 	    }
 	}
 
@@ -31,32 +23,32 @@ export namespace profile {
 
 export namespace results {
 	
-	export class HostResult {
+	export class DeviceInfo {
 	    ip: string;
-	    hostname?: string;
-	    mac?: string;
+	    isAlive: boolean;
+	    hostname: string;
+	    mac: string;
+	    os?: string;
+	    osFamily?: string;
+	    deviceType?: string;
 	    vendor?: string;
-	    rtt_ms?: number;
-	    alive: boolean;
-	    source?: string;
-	    last_seen_utc?: string;
-	    open_ports?: number[];
+	    openPorts: number[];
 	
 	    static createFrom(source: any = {}) {
-	        return new HostResult(source);
+	        return new DeviceInfo(source);
 	    }
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.ip = source["ip"];
+	        this.isAlive = source["isAlive"];
 	        this.hostname = source["hostname"];
 	        this.mac = source["mac"];
+	        this.os = source["os"];
+	        this.osFamily = source["osFamily"];
+	        this.deviceType = source["deviceType"];
 	        this.vendor = source["vendor"];
-	        this.rtt_ms = source["rtt_ms"];
-	        this.alive = source["alive"];
-	        this.source = source["source"];
-	        this.last_seen_utc = source["last_seen_utc"];
-	        this.open_ports = source["open_ports"];
+	        this.openPorts = source["openPorts"];
 	    }
 	}
 

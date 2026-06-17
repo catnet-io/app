@@ -8,11 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mendsec/catnet-core/pkg/events"
-	"github.com/mendsec/catnet-core/pkg/export"
-	"github.com/mendsec/catnet-core/pkg/profile"
+	"github.com/mendsec/catnet-core/pkg/engine"
+	"github.com/mendsec/catnet-core/pkg/exporter"
 	"github.com/mendsec/catnet-core/pkg/results"
-	"github.com/mendsec/catnet-core/pkg/scan"
 	"github.com/mendsec/catnet-core/pkg/targets"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -20,14 +18,12 @@ import (
 // App struct
 type App struct {
 	ctx    context.Context
-	engine *scan.Engine
+	cancel context.CancelFunc
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{
-		engine: scan.NewEngine(),
-	}
+	return &App{}
 }
 
 // startup is called when the app starts. The context is saved
@@ -37,70 +33,39 @@ func (a *App) startup(ctx context.Context) {
 }
 
 // StartScan wrapper for frontend
-func (a *App) StartScan(ips []string, cfg profile.ScanProfile) error {
-	// Sanitizar configuração recebida do frontend
-	if cfg.Concurrency <= 0 || cfg.Concurrency > 256 {
-		cfg.Concurrency = 16
-	}
-	if cfg.TimeoutMs <= 0 || cfg.TimeoutMs > 10000 {
-		cfg.TimeoutMs = 1000
-	}
+func (a *App) StartScan(ips []string, cfg engine.ScanConfig) error {
+	// Defensively cancel any existing scan
+	a.StopScan()
 
-	eventChan := make(chan events.Event)
+	var ctx context.Context
+	ctx, a.cancel = context.WithCancel(context.Background())
 
-	// Goroutine to listen for events from the core engine and proxy them to Wails UI
 	go func() {
-		for ev := range eventChan {
-			switch ev.Type {
-			case events.ScanStarted:
+		engine.StartScan(ctx, ips, cfg, func(event engine.ScanEvent) {
+			switch event.Type {
+			case engine.EventLifecycleStart:
 				runtime.EventsEmit(a.ctx, "scan_started")
-			case events.HostDiscovered:
-				data, ok := ev.Data.(events.HostDiscoveredData)
-				if ok {
-					// Adapt for the current frontend expectation if necessary
-					runtime.EventsEmit(a.ctx, "scan_result", data.Host)
+			case engine.EventResult:
+				if event.Device != nil {
+					runtime.EventsEmit(a.ctx, "scan_result", event.Device)
 				}
-			case events.ScanProgress:
-				data, ok := ev.Data.(events.ProgressData)
-				if ok {
-					runtime.EventsEmit(a.ctx, "scan_progress", data.Ratio)
-				}
-			case events.ScanCompleted:
+			case engine.EventProgress:
+				runtime.EventsEmit(a.ctx, "scan_progress", event.Progress)
+			case engine.EventLifecycleComplete, engine.EventLifecycleCancel:
 				runtime.EventsEmit(a.ctx, "scan_finished")
 			}
-		}
+		})
 	}()
 
-	err := a.engine.ScanStream(context.Background(), ips, cfg, eventChan)
-	close(eventChan)
-	return err
+	return nil
 }
 
 // StopScan wrapper
 func (a *App) StopScan() {
-	if a.engine != nil {
-		a.engine.Stop()
+	if a.cancel != nil {
+		a.cancel()
+		a.cancel = nil
 	}
-}
-
-// Ping wrapper for Quick Tools
-func (a *App) Ping(ip string) bool {
-	return scan.Ping(ip, 1000)
-}
-
-// ReverseDNS wrapper
-func (a *App) ReverseDNS(ip string) string {
-	return scan.ReverseDNS(ip)
-}
-
-// GetMAC wrapper
-func (a *App) GetMAC(ip string) string {
-	return scan.GetMAC(ip)
-}
-
-// ScanPorts wrapper
-func (a *App) ScanPorts(ip string, ports []int) []int {
-	return scan.ScanPorts(ip, ports, 500)
 }
 
 // ParseRange expands an IP range string (e.g. 192.168.1.1-254) into a list of IPs.
@@ -150,7 +115,7 @@ func (a *App) GetLocalIPRange() string {
 }
 
 // ExportResults asks the user for a save location and exports the results
-func (a *App) ExportResults(devices []results.HostResult) (string, error) {
+func (a *App) ExportResults(devices []results.DeviceInfo) (string, error) {
 	options := runtime.SaveDialogOptions{
 		DefaultFilename: "catnet_results.json",
 		Title:           "Export Scan Results",
@@ -179,10 +144,15 @@ func (a *App) ExportResults(devices []results.HostResult) (string, error) {
 	var data []byte
 	var formatErr error
 
+	report := &results.ScanReport{
+		Devices: devices,
+		Total: len(devices),
+	}
+
 	if strings.ToLower(filepath.Ext(savePath)) == ".json" {
-		data, formatErr = export.ExportJSON(devices)
+		data, formatErr = exporter.ExportJSON(report)
 	} else {
-		data, formatErr = export.ExportCSV(devices)
+		data, formatErr = exporter.ExportCSV(report)
 	}
 
 	if formatErr != nil {
