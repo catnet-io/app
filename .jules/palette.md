@@ -1,0 +1,3 @@
+## 2024-10-24 - Interactive Custom Component Accessibility
+**Learning:** When making custom `.cyber-table` sortable `<th>` elements interactive, adding `role="button"` overrides the native `columnheader` role, which invalidates the `aria-sort` attribute in screen readers.
+**Action:** Do not use `role="button"` on `<th>` elements. Instead, rely on `tabIndex={0}`, manual `onKeyDown` (Enter/Space) handling, and `aria-sort` to ensure screen reader compatibility while maintaining keyboard accessibility. Ensure `:focus-visible` styling is appended to existing selectors to maintain visual design consistency without introducing rogue custom CSS.
