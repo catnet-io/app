@@ -1,0 +1,3 @@
+## 2024-06-20 - Custom Table Header Accessibility
+**Learning:** When modifying interactive custom components in the frontend (such as `.cyber-table` sortable headers), manually implement accessibility features including `tabIndex={0}`, `onKeyDown` (Enter/Space) handling, `:focus-visible` styling, and `aria-sort`. Do not add `role="button"` directly to `<th>` elements, as it overrides the native `columnheader` role and invalidates the `aria-sort` attribute.
+**Action:** When making custom components interactive, ensure all native accessibility roles are maintained or enhanced with ARIA attributes and keyboard interaction patterns.

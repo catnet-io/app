@@ -149,7 +149,8 @@ body {
 
 .cyber-btn:focus-visible,
 .icon-btn:focus-visible,
-.cyber-input:focus-visible {
+.cyber-input:focus-visible,
+.cyber-table th:focus-visible {
   outline: 2px solid var(--text-highlight);
   outline-offset: 2px;
 }
