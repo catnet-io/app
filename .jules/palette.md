@@ -1,0 +1,3 @@
+## 2024-06-21 - Preserving native roles for sortable table headers
+**Learning:** When making `<th>` elements interactive (sortable) for keyboard users, do not add `role="button"`. Doing so overrides the native `columnheader` role, which invalidates the `aria-sort` attribute needed by screen readers.
+**Action:** Implement interactivity manually on `<th>` elements using `tabIndex={0}` and `onKeyDown` (handling Enter and Space), rather than changing the role, to maintain full accessibility.
