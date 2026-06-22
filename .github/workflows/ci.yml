@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout catnet-scanner
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: catnet-scanner
 
       - name: Checkout catnet-core
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: mendsec/catnet-core
           path: catnet-core
@@ -42,12 +42,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout catnet-scanner
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: catnet-scanner
 
       - name: Checkout catnet-core
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: mendsec/catnet-core
           path: catnet-core
