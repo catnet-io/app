@@ -1,5 +1,8 @@
 name: Release
 
+permissions:
+  contents: read
+
 on:
   push:
     tags:
@@ -23,23 +26,23 @@ jobs:
     
     steps:
     - name: Checkout catnet-scanner
-      uses: actions/checkout@v6
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       with:
         path: catnet-scanner
 
     - name: Checkout catnet-core
-      uses: actions/checkout@v6
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       with:
         repository: mendsec/catnet-core
         path: catnet-core
 
     - name: Set up Go
-      uses: actions/setup-go@v6
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
       with:
         go-version: '1.26.x'
 
     - name: Set up Bun
-      uses: oven-sh/setup-bun@v2
+      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
 
     - name: Install Wails
       run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
@@ -63,7 +66,7 @@ jobs:
       shell: bash
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with:
         name: ${{ matrix.name }}
         path: catnet-scanner/build/bin/${{ matrix.name }}
@@ -75,12 +78,12 @@ jobs:
       contents: write
     steps:
     - name: Checkout catnet-scanner
-      uses: actions/checkout@v6
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       with:
         path: catnet-scanner
 
     - name: Download all artifacts
-      uses: actions/download-artifact@v8
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         path: artifacts
 
@@ -93,7 +96,7 @@ jobs:
         awk "/## \[$VERSION_NO_V\]/{flag=1; print; next} /## \[/{if(flag) exit} flag" CHANGELOG.md > RELEASE_NOTES.md
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@26994186c0ac3ef5cae75ac16aa32e8153525f77 # v1
       with:
         files: artifacts/**/*
         body_path: catnet-scanner/RELEASE_NOTES.md
