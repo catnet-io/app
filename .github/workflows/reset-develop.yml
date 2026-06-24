@@ -1,0 +1,25 @@
+name: Reset develop after merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  reset-develop:
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.ref == 'develop-signed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Reset develop to main
+        run: |
+          git fetch origin develop --depth=10
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git push origin origin/main:develop --force
