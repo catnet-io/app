@@ -38,13 +38,17 @@ jobs:
           git config user.name "mendsec"
           git config user.email "fabiomendesilva@gmail.com"
 
-      - name: Sync develop if behind main
+      - name: Sync develop with main
         run: |
           git fetch origin main develop --depth=100
           BEHIND=$(git rev-list --count origin/develop..origin/main 2>/dev/null || echo "0")
           if [ "$BEHIND" -gt "0" ]; then
+            git config user.name "mendsec"
+            git config user.email "fabiomendesilva@gmail.com"
+            git checkout -b sync-branch origin/develop
+            git merge origin/main --no-edit
             git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-            git push origin origin/main:develop
+            git push origin HEAD:develop
           fi
 
       - name: Create signed branch
