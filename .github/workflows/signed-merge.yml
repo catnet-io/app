@@ -1,0 +1,97 @@
+name: Signed Merge
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-and-pr:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+      - run: echo "checkout ok"
+
+      - name: Setup SSH signing
+        env:
+          SSH_KEY: ${{ secrets.BOT_SSH_PRIVATE_KEY }}
+        run: |
+          if [ -z "$SSH_KEY" ]; then
+            echo "BOT_SSH_PRIVATE_KEY not set."
+            exit 1
+          fi
+          echo "SSH key ok"
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keygen -y -f ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.pub
+          git config gpg.format ssh
+          git config user.signingkey ~/.ssh/id_ed25519.pub
+          git config commit.gpgsign true
+          git config user.name "mendsec"
+          git config user.email "fabiomendesilva@gmail.com"
+
+      - name: Sync develop if behind main
+        run: |
+          git fetch origin main develop --depth=100
+          BEHIND=$(git rev-list --count origin/develop..origin/main 2>/dev/null || echo "0")
+          if [ "$BEHIND" -gt "0" ]; then
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+            git push origin origin/main:develop
+          fi
+
+      - name: Create signed branch
+        run: |
+          COUNT=$(git rev-list --count origin/main..origin/develop 2>/dev/null || echo "0")
+          if [ "$COUNT" -eq "0" ]; then
+            echo "No new commits."
+            exit 0
+          fi
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git checkout -B develop-signed origin/develop
+          git filter-branch -f \
+            --env-filter 'export GIT_COMMITTER_NAME="mendsec" GIT_COMMITTER_EMAIL="fabiomendesilva@gmail.com"' \
+            --commit-filter 'git commit-tree -S "$@"' \
+            origin/main..HEAD
+          git push origin HEAD:develop-signed --force-with-lease
+
+      - name: Close old PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for HEAD in develop develop-signed; do
+            NUMBER=$(curl -s -H "Authorization: token $GH_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:$HEAD&base=main" | \
+              jq 'if type=="array" then .[0].number else empty end' 2>/dev/null || echo "")
+            if [ -n "$NUMBER" ]; then
+              curl -s -X PATCH \
+                -H "Authorization: token $GH_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/pulls/$NUMBER" \
+                -d '{"state":"closed","body":"Replaced by signed PR."}'
+            fi
+          done
+
+      - name: Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EXISTING=$(curl -s -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:develop-signed&base=main" | \
+            jq 'if type=="array" then length else 0 end')
+          if [ "$EXISTING" -gt "0" ]; then
+            echo "PR already exists, skipping."
+            exit 0
+          fi
+          curl -s -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/pulls \
+            -d '{"title":"chore: merge develop into main","head":"develop-signed","base":"main","body":"Automated PR by github-actions[bot]. Commits are SSH-signed."}'
