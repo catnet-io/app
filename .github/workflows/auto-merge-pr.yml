@@ -1,4 +1,4 @@
-name: Auto Merge PR (develop → main)
+name: Auto Merge PR (develop -> main)
 
 on:
   push:
@@ -91,7 +91,7 @@ jobs:
           gh pr create \
             --base main \
             --head develop-signed \
-            --title "chore: merge develop → main" \
+            --title "chore: merge develop into main" \
             --body "Automated PR by github-actions[bot].
 
         Commits on \`develop-signed\` are GPG-signed using the repository's automation key." \
