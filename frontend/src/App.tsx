@@ -175,6 +175,14 @@ function App() {
               className="cyber-input" 
               value={ipRange}
               onChange={e => setIpRange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (!isScanning && isValidIpRange(ipRange)) {
+                    handleScan();
+                  }
+                }
+              }}
               disabled={isScanning}
               placeholder="IP Range / CIDR"
               aria-label="IP Range or CIDR"
@@ -202,7 +210,14 @@ function App() {
       </div>
 
       {isScanning && (
-        <div className="progress-container">
+        <div
+          className="progress-container"
+          role="progressbar"
+          aria-label="Scan progress"
+          aria-valuenow={Math.round(progress * 100)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+        >
           <div className="progress-bar" style={{ width: `${progress * 100}%` }}>
             <img src={nyanImg} alt="nyan" className="nyan-cat-img" />
           </div>
@@ -264,7 +279,7 @@ function App() {
             {devices.length === 0 && (
               <tr>
                 <td colSpan={5} style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
-                  Ready to scan. Awaiting input.
+                  {isScanning ? 'Scanning network...' : 'Ready to scan. Awaiting input.'}
                 </td>
               </tr>
             )}
