@@ -67,9 +67,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           for HEAD in develop develop-signed; do
-            OLD_PR=$(gh pr list --head "$HEAD" --base main --json number -q '.[0].number' 2>/dev/null || echo "")
-            if [ -n "$OLD_PR" ]; then
-              gh pr close "$OLD_PR" --comment "Replaced by signed PR." 2>/dev/null || true
+            NUMBER=$(curl -s -H "Authorization: token $GH_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:$HEAD&base=main" | \
+              jq 'if type=="array" then .[0].number else empty end' 2>/dev/null || echo "")
+            if [ -n "$NUMBER" ]; then
+              curl -s -X PATCH \
+                -H "Authorization: token $GH_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/pulls/$NUMBER" \
+                -d '{"state":"closed","body":"Replaced by signed PR."}'
             fi
           done
 
@@ -77,9 +83,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr create \
-            --base main \
-            --head develop-signed \
-            --title "chore: merge develop into main" \
-            --body "Automated PR by github-actions[bot]. Commits are SSH-signed." \
-            || echo "PR already exists, skipping."
+          EXISTING=$(curl -s -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls?head=${{ github.repository_owner }}:develop-signed&base=main" | \
+            jq 'if type=="array" then length else 0 end')
+          if [ "$EXISTING" -gt "0" ]; then
+            echo "PR already exists, skipping."
+            exit 0
+          fi
+          curl -s -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/pulls \
+            -d '{"title":"chore: merge develop into main","head":"develop-signed","base":"main","body":"Automated PR by github-actions[bot]. Commits are SSH-signed."}'
