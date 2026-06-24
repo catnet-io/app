@@ -11,13 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout catnet-scanner
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4.2.2
         with:
           path: catnet-scanner
       - name: Checkout catnet-core
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4.2.2
         with:
           repository: mendsec/catnet-core
+          ref: fix/add-compat-packages-for-catnet-scanner
           path: catnet-core
       - name: Mock frontend dist
         working-directory: catnet-scanner
@@ -33,13 +34,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout catnet-scanner
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4.2.2
         with:
           path: catnet-scanner
       - name: Checkout catnet-core
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4.2.2
         with:
           repository: mendsec/catnet-core
+          ref: fix/add-compat-packages-for-catnet-scanner
           path: catnet-core
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2

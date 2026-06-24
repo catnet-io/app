@@ -10,18 +10,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout catnet-scanner
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
         with:
           path: catnet-scanner
 
       - name: Checkout catnet-core
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
         with:
           repository: mendsec/catnet-core
+          ref: fix/add-compat-packages-for-catnet-scanner
           path: catnet-core
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v5.1.0
         with:
           go-version: '1.26.x'
           
@@ -42,14 +43,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout catnet-scanner
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
         with:
           path: catnet-scanner
 
       - name: Checkout catnet-core
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
         with:
           repository: mendsec/catnet-core
+          ref: fix/add-compat-packages-for-catnet-scanner
           path: catnet-core
 
       - name: Setup Bun

@@ -147,6 +147,7 @@ body {
   pointer-events: auto; /* Required to show tooltips on disabled buttons */
 }
 
+.cyber-table th:focus-visible,
 .cyber-btn:focus-visible,
 .icon-btn:focus-visible,
 .cyber-input:focus-visible {
