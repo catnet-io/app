@@ -12,7 +12,6 @@ permissions:
 jobs:
   sync-and-pr:
     runs-on: ubuntu-latest
-    if: github.actor != 'github-actions[bot]'
 
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
