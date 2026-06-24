@@ -64,7 +64,7 @@ jobs:
 
       - name: Close old PRs
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           for HEAD in develop develop-signed; do
             OLD_PR=$(gh pr list --head "$HEAD" --base main --json number -q '.[0].number' 2>/dev/null || echo "")
@@ -75,7 +75,7 @@ jobs:
 
       - name: Create Pull Request
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr create \
             --base main \
