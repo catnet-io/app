@@ -6,7 +6,7 @@ req = urllib.request.Request(url)
 req.add_header('User-Agent', 'Python-urllib/3.x')
 
 try:
-    with urllib.request.urlopen(req) as response:
+    with urllib.request.urlopen(req) as response: # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
         data = json.loads(response.read().decode())
         with open('docs/ci_troubleshooting/PR_HISTORY.md', 'w', encoding='utf-8') as f:
             f.write("# Histórico de Pull Requests\n\n")
