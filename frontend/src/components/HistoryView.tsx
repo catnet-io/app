@@ -1,26 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Database, Play, Trash2, Download } from 'lucide-react';
-
-interface MockScan {
-  id: number;
-  date: string;
-  target: string;
-  hostsAlive: number;
-  duration: string;
-}
-
-const mockScans: MockScan[] = [
-  { id: 4, date: "2026-06-25 09:30:00", target: "192.168.1.1-254", hostsAlive: 12, duration: "3s" },
-  { id: 3, date: "2026-06-24 15:45:10", target: "10.0.0.1/24", hostsAlive: 4, duration: "1s" },
-  { id: 2, date: "2026-06-23 11:20:00", target: "192.168.1.1-254", hostsAlive: 10, duration: "2.5s" },
-  { id: 1, date: "2026-06-20 08:00:00", target: "192.168.1.1-254", hostsAlive: 15, duration: "4s" },
-];
+import { GetScans, DeleteScan } from '../../wailsjs/go/main/App';
+import { store } from '../../wailsjs/go/models';
 
 export function HistoryView({ onCompare }: { onCompare: (scanId: number) => void }) {
-  const [scans, setScans] = useState(mockScans);
+  const [scans, setScans] = useState<store.ScanSummary[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleDelete = (id: number) => {
-    setScans(scans.filter(s => s.id !== id));
+  const fetchScans = async () => {
+    try {
+      const data = await GetScans();
+      setScans(data || []);
+    } catch (e) {
+      console.error("Failed to load scans", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchScans();
+  }, []);
+
+  const handleDelete = async (id: number) => {
+    try {
+      await DeleteScan(id);
+      fetchScans();
+    } catch (e) {
+      console.error("Failed to delete", e);
+    }
   };
 
   return (
@@ -28,7 +36,7 @@ export function HistoryView({ onCompare }: { onCompare: (scanId: number) => void
       <div className="glass-panel header" style={{ padding: '15px 20px', marginBottom: '20px' }}>
         <div className="header-title" style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}>
           <Database size={20} style={{ marginRight: '10px' }} />
-          Scan History (Mocked)
+          Scan History
         </div>
       </div>
 
@@ -40,18 +48,20 @@ export function HistoryView({ onCompare }: { onCompare: (scanId: number) => void
               <th>Date</th>
               <th>Target</th>
               <th>Hosts Alive</th>
-              <th>Duration</th>
+              <th>Total Hosts</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {scans.map((scan) => (
+            {loading ? (
+              <tr><td colSpan={6} style={{ textAlign: 'center', padding: '30px' }}>Loading...</td></tr>
+            ) : scans.map((scan) => (
               <tr key={scan.id}>
                 <td style={{ color: 'var(--text-muted)' }}>#{scan.id}</td>
-                <td>{scan.date}</td>
+                <td>{new Date(scan.start_time).toLocaleString()}</td>
                 <td><span className="mono-badge">{scan.target}</span></td>
-                <td><span className="status-dot status-alive"></span> {scan.hostsAlive}</td>
-                <td>{scan.duration}</td>
+                <td><span className="status-dot status-alive"></span> {scan.alive_hosts}</td>
+                <td>{scan.total_hosts}</td>
                 <td style={{ display: 'flex', gap: '8px' }}>
                   <button className="icon-btn" title="Compare against last scan" onClick={() => onCompare(scan.id)}>
                     <Play size={16} /> Diff
@@ -65,7 +75,7 @@ export function HistoryView({ onCompare }: { onCompare: (scanId: number) => void
                 </td>
               </tr>
             ))}
-            {scans.length === 0 && (
+            {!loading && scans.length === 0 && (
               <tr>
                 <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
                   No historical scans found.
