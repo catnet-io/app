@@ -66,6 +66,11 @@ export function ScannerView() {
     }
   };
 
+  useEffect(() => {
+    handleAutoDetect();
+  }, []);
+
+
   const handleScan = async () => {
     if (isScanning) return;
     try {

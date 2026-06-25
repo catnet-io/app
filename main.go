@@ -18,10 +18,10 @@ func main() {
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:  "CatNet Scanner",
-		Width:  1100,
-		Height: 768,
-		MinWidth: 1100,
-		MinHeight: 700,
+		Width:  1024,
+		Height: 640,
+		MinWidth: 940,
+		MinHeight: 500,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
