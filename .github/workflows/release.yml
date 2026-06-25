@@ -53,7 +53,7 @@ jobs:
 
     - name: Build Wails App
       working-directory: catnet-scanner
-      run: wails build -platform ${{ matrix.platform }}
+      run: wails build -platform ${{ matrix.platform }} -tags webkit2_41
 
     - name: Rename build
       working-directory: catnet-scanner
