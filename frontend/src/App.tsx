@@ -268,7 +268,12 @@ function App() {
             {sortedDevices.map((dev, i) => (
               <tr key={i}>
                 <td>
-                  <span className={`status-dot ${dev.alive ? 'status-alive' : 'status-dead'}`}></span>
+                  <span
+                    className={`status-dot ${dev.alive ? 'status-alive' : 'status-dead'}`}
+                    role="img"
+                    aria-label={dev.alive ? 'Device is online' : 'Device is offline'}
+                    title={dev.alive ? 'Online' : 'Offline'}
+                  ></span>
                 </td>
                 <td>{dev.hostname || '--'}</td>
                 <td>{dev.ip}</td>
