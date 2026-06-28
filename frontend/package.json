@@ -1,23 +1,27 @@
 {
-  "name": "frontend",
-  "private": true,
-  "version": "0.4.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "lucide-react": "^1.17.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6"
-  },
-  "devDependencies": {
-    "@types/react": "^19.2.15",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.2",
-    "typescript": "^6.0.3",
-    "vite": "^8.0.14"
-  }
+    "name":  "catnet-app",
+    "private":  true,
+    "version":  "0.4.0",
+    "type":  "module",
+    "scripts":  {
+                    "dev":  "vite",
+                    "build":  "tsc \u0026\u0026 vite build",
+                    "preview":  "vite preview"
+                },
+    "dependencies":  {
+                         "lucide-react":  "^1.17.0",
+                         "react":  "^19.2.6",
+                         "react-dom":  "^19.2.6"
+                     },
+    "devDependencies":  {
+                            "@types/react":  "^19.2.15",
+                            "@types/react-dom":  "^19.2.3",
+                            "@vitejs/plugin-react":  "^6.0.2",
+                            "typescript":  "^6.0.3",
+                            "vite":  "^8.0.14"
+                        },
+    "repository":  {
+                       "type":  "git",
+                       "url":  "https://github.com/catnet-io/app"
+                   }
 }

@@ -12,17 +12,17 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout catnet-scanner
+      - name: Checkout app
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          path: catnet-scanner
+          path: app
 
-      - name: Checkout catnet-core
+      - name: Checkout engine
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          repository: mendsec/catnet-core
+          repository: catnet-io/engine
           token: ${{ secrets.GH_PAT }}
-          path: catnet-core
+          path: engine
 
       - name: Setup Go
         uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
@@ -33,11 +33,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
 
       - name: Mock frontend dist
-        working-directory: catnet-scanner
+        working-directory: app
         run: mkdir -p frontend/dist; echo "mock" > frontend/dist/index.html
 
       - name: Backend test
-        working-directory: catnet-scanner
+        working-directory: app
         env:
           CGO_ENABLED: 1
         run: go test -race -v ./...
@@ -45,16 +45,16 @@ jobs:
   frontend:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout catnet-scanner
+      - name: Checkout app
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          path: catnet-scanner
+          path: app
 
-      - name: Checkout catnet-core
+      - name: Checkout engine
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          repository: mendsec/catnet-core
-          path: catnet-core
+          repository: catnet-io/engine
+          path: engine
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
@@ -62,9 +62,9 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
-        working-directory: catnet-scanner/frontend
+        working-directory: app/frontend
         run: bun install
 
       - name: Build frontend
-        working-directory: catnet-scanner/frontend
+        working-directory: app/frontend
         run: bun run build

@@ -18,23 +18,23 @@ jobs:
   govulncheck:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout catnet-scanner
+      - name: Checkout app
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          path: catnet-scanner
+          path: app
 
-      - name: Checkout catnet-core
+      - name: Checkout engine
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          repository: mendsec/catnet-core
-          path: catnet-core
+          repository: catnet-io/engine
+          path: engine
       
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libwebkit2gtk-4.0-dev || true
       
       - name: Mock frontend dist
         shell: bash
-        working-directory: catnet-scanner
+        working-directory: app
         run: mkdir -p frontend/dist; echo "mock" > frontend/dist/index.html
       
       - name: Run govulncheck
@@ -42,5 +42,5 @@ jobs:
         with:
           go-version-input: '1.26.x'
           go-package: ./...
-          work-dir: ./catnet-scanner
+          work-dir: ./app
           repo-checkout: false

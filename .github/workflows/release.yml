@@ -25,16 +25,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     
     steps:
-    - name: Checkout catnet-scanner
+    - name: Checkout app
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
-        path: catnet-scanner
+        path: app
 
-    - name: Checkout catnet-core
+    - name: Checkout engine
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
-        repository: mendsec/catnet-core
-        path: catnet-core
+        repository: catnet-io/engine
+        path: engine
 
     - name: Set up Go
       uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
@@ -52,11 +52,11 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
 
     - name: Build Wails App
-      working-directory: catnet-scanner
+      working-directory: app
       run: wails build -platform ${{ matrix.platform }} -tags webkit2_41
 
     - name: Rename build
-      working-directory: catnet-scanner
+      working-directory: app
       run: |
         if [ "$RUNNER_OS" == "Windows" ]; then
           mv build/bin/*.exe build/bin/${{ matrix.name }}
@@ -69,7 +69,7 @@ jobs:
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
       with:
         name: ${{ matrix.name }}
-        path: catnet-scanner/build/bin/${{ matrix.name }}
+        path: app/build/bin/${{ matrix.name }}
 
   release:
     needs: build
@@ -77,10 +77,10 @@ jobs:
     permissions:
       contents: write
     steps:
-    - name: Checkout catnet-scanner
+    - name: Checkout app
       uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
-        path: catnet-scanner
+        path: app
 
     - name: Download all artifacts
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -89,7 +89,7 @@ jobs:
 
     - name: Extract Release Notes
       id: extract-notes
-      working-directory: catnet-scanner
+      working-directory: app
       run: |
         VERSION=${GITHUB_REF#refs/tags/}
         VERSION_NO_V=${VERSION#v}
@@ -99,4 +99,4 @@ jobs:
       uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
       with:
         files: artifacts/**/*
-        body_path: catnet-scanner/RELEASE_NOTES.md
+        body_path: app/RELEASE_NOTES.md

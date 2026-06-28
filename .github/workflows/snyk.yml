@@ -13,48 +13,48 @@ jobs:
   snyk-go:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout catnet-scanner
+      - name: Checkout app
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          path: catnet-scanner
-      - name: Checkout catnet-core
+          path: app
+      - name: Checkout engine
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          repository: mendsec/catnet-core
-          path: catnet-core
+          repository: catnet-io/engine
+          path: engine
       - name: Mock frontend dist
-        working-directory: catnet-scanner
+        working-directory: app
         run: mkdir -p frontend/dist; echo "mock" > frontend/dist/index.html
       - name: Run Snyk to check Go vulnerabilities
         uses: snyk/actions/golang@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: --file=catnet-scanner/go.mod
+          args: --file=app/go.mod
 
   snyk-frontend:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout catnet-scanner
+      - name: Checkout app
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          path: catnet-scanner
-      - name: Checkout catnet-core
+          path: app
+      - name: Checkout engine
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          repository: mendsec/catnet-core
-          path: catnet-core
+          repository: catnet-io/engine
+          path: engine
       - name: Setup Bun
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: latest
       - name: Install dependencies
-        working-directory: catnet-scanner/frontend
+        working-directory: app/frontend
         run: bun install
       - name: Setup Snyk
         uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
       - name: Run Snyk to check Bun vulnerabilities
-        working-directory: catnet-scanner/frontend
+        working-directory: app/frontend
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         run: snyk test --file=package.json

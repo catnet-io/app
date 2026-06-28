@@ -9,14 +9,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mendsec/catnet-core/pkg/diff"
-	"github.com/mendsec/catnet-core/pkg/events"
-	"github.com/mendsec/catnet-core/pkg/export"
-	"github.com/mendsec/catnet-core/pkg/profile"
-	"github.com/mendsec/catnet-core/pkg/results"
-	"github.com/mendsec/catnet-core/pkg/scan"
-	"github.com/mendsec/catnet-core/pkg/store"
-	"github.com/mendsec/catnet-core/pkg/targets"
+	"github.com/catnet-io/engine/pkg/diff"
+	"github.com/catnet-io/engine/pkg/events"
+	"github.com/catnet-io/engine/pkg/export"
+	"github.com/catnet-io/engine/pkg/profile"
+	"github.com/catnet-io/engine/pkg/results"
+	"github.com/catnet-io/engine/pkg/scan"
+	"github.com/catnet-io/engine/pkg/store"
+	"github.com/catnet-io/engine/pkg/targets"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -58,7 +58,7 @@ func (a *App) startup(ctx context.Context) {
 
 // StartScan wrapper for frontend
 func (a *App) StartScan(ips []string, cfg profile.ScanProfile) error {
-	// Sanitizar configuração recebida do frontend
+	// Sanitizar configuraÃ§Ã£o recebida do frontend
 	if cfg.Concurrency <= 0 || cfg.Concurrency > 256 {
 		cfg.Concurrency = 16
 	}
@@ -233,15 +233,15 @@ func (a *App) ExportResults(devices []results.HostResult) (string, error) {
 		return "", err
 	}
 
-	// Sanitizar e validar o caminho retornado pelo diálogo
+	// Sanitizar e validar o caminho retornado pelo diÃ¡logo
 	cleanPath := filepath.Clean(savePath)
 	if cleanPath != savePath {
-		return "", fmt.Errorf("caminho de arquivo inválido")
+		return "", fmt.Errorf("caminho de arquivo invÃ¡lido")
 	}
 
 	dir := filepath.Dir(cleanPath)
 	if dir == "" || dir == "." {
-		return "", fmt.Errorf("diretório de destino inválido")
+		return "", fmt.Errorf("diretÃ³rio de destino invÃ¡lido")
 	}
 
 	var data []byte
