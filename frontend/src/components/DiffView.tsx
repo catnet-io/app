@@ -52,7 +52,7 @@ export function DiffView({ scanId, onBack }: { scanId: number | null, onBack: ()
   return (
     <div className="diff-view">
       <div className="glass-panel header" style={{ padding: '15px 20px', marginBottom: '20px', display: 'flex', gap: '15px', alignItems: 'center' }}>
-        <button className="icon-btn" onClick={onBack} title="Back to History">
+        <button className="icon-btn" onClick={onBack} title="Back to History" aria-label="Back to History">
           <ArrowLeft size={20} />
         </button>
         <div className="header-title" style={{ fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}>
