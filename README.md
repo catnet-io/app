@@ -1,4 +1,4 @@
-﻿# catnet-scanner
+# catnet-scanner
 
 catnet-scanner is the desktop application of the CatNet ecosystem.
 
@@ -16,3 +16,13 @@ Core scanning logic is being progressively centralized in catnet-core.
 
 ## Status
 Transition phase. This repository is being repositioned from standalone scanner app to GUI frontend in a multi-repository architecture.
+
+
+## Part of the CatNet ecosystem
+
+| | Repository | Role |
+|---|---|---|
+| ⚙️ | [catnet-io/engine](https://github.com/catnet-io/engine) | Shared Go scanning engine |
+| 💻 | [catnet-io/catnet](https://github.com/catnet-io/catnet) | CLI |
+| 🖥️ | [catnet-io/app](https://github.com/catnet-io/app) | Desktop app |
+| 📟 | [catnet-io/tui](https://github.com/catnet-io/tui) | Terminal UI |
