@@ -23,6 +23,9 @@ export function HistoryView({ onCompare }: { onCompare: (scanId: number) => void
   }, []);
 
   const handleDelete = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this scan? This action cannot be undone.")) {
+      return;
+    }
     try {
       await DeleteScan(id);
       fetchScans();
@@ -66,10 +69,10 @@ export function HistoryView({ onCompare }: { onCompare: (scanId: number) => void
                   <button className="icon-btn" title="Compare against last scan" onClick={() => onCompare(scan.id)}>
                     <Play size={16} /> Diff
                   </button>
-                  <button className="icon-btn" title="Export JSON">
+                  <button className="icon-btn" title="Export JSON" aria-label="Export JSON">
                     <Download size={16} />
                   </button>
-                  <button className="icon-btn" style={{ color: 'var(--status-dead)' }} title="Delete" onClick={() => handleDelete(scan.id)}>
+                  <button className="icon-btn" style={{ color: 'var(--status-dead)' }} title="Delete" aria-label={`Delete scan ${scan.id}`} onClick={() => handleDelete(scan.id)}>
                     <Trash2 size={16} />
                   </button>
                 </td>

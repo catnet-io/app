@@ -165,7 +165,7 @@ export function ScannerView() {
               aria-invalid={!isValidIpRange(ipRange) && ipRange !== '' ? 'true' : 'false'}
               style={{ borderColor: !isValidIpRange(ipRange) && ipRange !== '' ? 'var(--status-dead)' : undefined }}
             />
-            <button className="icon-btn" onClick={handleAutoDetect} disabled={isScanning} title="Auto Detect Subnet">
+            <button className="icon-btn" onClick={handleAutoDetect} disabled={isScanning} title="Auto Detect Subnet" aria-label="Auto Detect Subnet">
               <Search size={16} />
             </button>
           </div>
