@@ -5,6 +5,7 @@ import (
 
 	"github.com/catnet-io/app/internal/diff"
 	"github.com/catnet-io/app/internal/store"
+	"github.com/catnet-io/engine/pkg/profile"
 	"github.com/catnet-io/engine/pkg/results"
 )
 
@@ -49,4 +50,28 @@ func (a *AppHandlers) CompareScans(oldID, newID int64) ([]diff.HostDiff, error) 
 	}
 
 	return diff.Compare(oldReport, newReport), nil
+}
+
+// SaveProfile saves a favorite scan profile
+func (a *AppHandlers) SaveProfile(name string, prof profile.ScanProfile) (int64, error) {
+	if a.store == nil {
+		return 0, fmt.Errorf("database not initialized")
+	}
+	return a.store.SaveProfile(name, prof)
+}
+
+// GetProfiles retrieves all saved profiles
+func (a *AppHandlers) GetProfiles() ([]store.ProfileSummary, error) {
+	if a.store == nil {
+		return nil, fmt.Errorf("database not initialized")
+	}
+	return a.store.GetProfiles()
+}
+
+// DeleteProfile deletes a saved profile
+func (a *AppHandlers) DeleteProfile(id int64) error {
+	if a.store == nil {
+		return fmt.Errorf("database not initialized")
+	}
+	return a.store.DeleteProfile(id)
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/catnet-io/engine/pkg/profile"
 	"github.com/catnet-io/engine/pkg/results"
 )
 
@@ -160,4 +161,69 @@ func (s *sqliteStore) DeleteScan(scanID int64) error {
 	}
 	
 	return tx.Commit()
+}
+
+func (s *sqliteStore) SaveProfile(name string, prof profile.ScanProfile) (int64, error) {
+	portsJSON, err := json.Marshal(prof.DefaultPorts)
+	if err != nil {
+		return 0, fmt.Errorf("failed to marshal default ports: %w", err)
+	}
+
+	res, err := s.db.Exec(`
+		INSERT INTO scan_profiles (name, concurrency, timeout_ms, default_ports) 
+		VALUES (?, ?, ?, ?)
+		ON CONFLICT(name) DO UPDATE SET 
+			concurrency=excluded.concurrency, 
+			timeout_ms=excluded.timeout_ms, 
+			default_ports=excluded.default_ports`,
+		name, prof.Concurrency, prof.TimeoutMs, string(portsJSON),
+	)
+	if err != nil {
+		return 0, fmt.Errorf("failed to save scan profile: %w", err)
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get profile id: %w", err)
+	}
+	return id, nil
+}
+
+func (s *sqliteStore) GetProfiles() ([]ProfileSummary, error) {
+	rows, err := s.db.Query(`SELECT id, name, concurrency, timeout_ms, default_ports FROM scan_profiles ORDER BY name ASC`)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query scan profiles: %w", err)
+	}
+	defer rows.Close()
+
+	var profiles []ProfileSummary
+	for rows.Next() {
+		var p ProfileSummary
+		var portsJSON string
+		if err := rows.Scan(&p.ID, &p.Name, &p.Profile.Concurrency, &p.Profile.TimeoutMs, &portsJSON); err != nil {
+			return nil, fmt.Errorf("failed to scan scan profile row: %w", err)
+		}
+
+		if portsJSON != "" && portsJSON != "null" {
+			if err := json.Unmarshal([]byte(portsJSON), &p.Profile.DefaultPorts); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal default ports: %w", err)
+			}
+		}
+		if p.Profile.DefaultPorts == nil {
+			p.Profile.DefaultPorts = []int{}
+		}
+
+		profiles = append(profiles, p)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error: %w", err)
+	}
+
+	return profiles, nil
+}
+
+func (s *sqliteStore) DeleteProfile(id int64) error {
+	_, err := s.db.Exec(`DELETE FROM scan_profiles WHERE id = ?`, id)
+	return err
 }

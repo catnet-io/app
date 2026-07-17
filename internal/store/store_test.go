@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/catnet-io/engine/pkg/profile"
 	"github.com/catnet-io/engine/pkg/results"
 )
 
@@ -67,5 +68,55 @@ func TestStore_SaveAndGet(t *testing.T) {
 	summaries, _ = db.GetScans()
 	if len(summaries) != 0 {
 		t.Fatalf("expected 0 summaries after deletion, got %d", len(summaries))
+	}
+}
+
+func TestStore_Profiles(t *testing.T) {
+	db, err := NewSQLiteStore(":memory:")
+	if err != nil {
+		t.Fatalf("failed to open memory db: %v", err)
+	}
+	defer db.Close()
+
+	prof := profile.ScanProfile{
+		Concurrency:  32,
+		TimeoutMs:    500,
+		DefaultPorts: []int{80, 443},
+	}
+
+	id, err := db.SaveProfile("Test Profile", prof)
+	if err != nil {
+		t.Fatalf("failed to save profile: %v", err)
+	}
+
+	if id != 1 {
+		t.Errorf("expected profile id 1, got %d", id)
+	}
+
+	profiles, err := db.GetProfiles()
+	if err != nil {
+		t.Fatalf("failed to get profiles: %v", err)
+	}
+	if len(profiles) != 1 {
+		t.Fatalf("expected 1 profile, got %d", len(profiles))
+	}
+	if profiles[0].Name != "Test Profile" {
+		t.Errorf("expected name 'Test Profile', got %s", profiles[0].Name)
+	}
+	if profiles[0].Profile.Concurrency != 32 {
+		t.Errorf("expected concurrency 32, got %d", profiles[0].Profile.Concurrency)
+	}
+
+	err = db.DeleteProfile(id)
+	if err != nil {
+		t.Fatalf("failed to delete profile: %v", err)
+	}
+
+	profiles, err = db.GetProfiles()
+	if err != nil {
+		t.Fatalf("failed to get profiles: %v", err)
+	}
+	if len(profiles) != 0 {
+		t.Errorf("expected 0 profiles after deletion, got %d", len(profiles))
 	}
 }

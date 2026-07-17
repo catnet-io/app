@@ -7,9 +7,16 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/catnet-io/engine/pkg/profile"
 	"github.com/catnet-io/engine/pkg/results"
 	_ "modernc.org/sqlite"
 )
+
+type ProfileSummary struct {
+	ID      int64               `json:"id"`
+	Name    string              `json:"name"`
+	Profile profile.ScanProfile `json:"profile"`
+}
 
 // ScanStore defines the interface for persisting scan data.
 type ScanStore interface {
@@ -18,6 +25,11 @@ type ScanStore interface {
 	GetReport(scanID int64) (*results.ScanReport, error)
 	DeleteScan(scanID int64) error
 	Close() error
+
+	// Scan Profiles
+	SaveProfile(name string, prof profile.ScanProfile) (int64, error)
+	GetProfiles() ([]ProfileSummary, error)
+	DeleteProfile(id int64) error
 }
 
 type sqliteStore struct {
@@ -87,6 +99,14 @@ func (s *sqliteStore) initSchema() error {
 		open_ports TEXT, -- JSON array of ints
 		is_alive BOOLEAN,
 		FOREIGN KEY(scan_id) REFERENCES scans(id) ON DELETE CASCADE
+	);
+
+	CREATE TABLE IF NOT EXISTS scan_profiles (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		name TEXT UNIQUE,
+		concurrency INTEGER,
+		timeout_ms INTEGER,
+		default_ports TEXT -- JSON array of ints
 	);
 	`
 	_, err := s.db.Exec(schema)

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, KeyboardEvent } from 'react';
-import { StartScan, StopScan, ParseRange, ExportResults, GetLocalIPRange } from '../../wailsjs/go/main/App';
+import { StartScan, StopScan, ParseRange, ExportResults, GetLocalIPRange, Ping, ReverseDNS, ScanPorts } from '../../wailsjs/go/main/App';
 import { EventsOn, EventsOff } from '../../wailsjs/runtime/runtime';
 import { Play, Square, Terminal, Download, Search } from 'lucide-react';
 import nyanImg from '../assets/nyan.png';
@@ -7,13 +7,19 @@ import { results, profile } from '../../wailsjs/go/models';
 
 export function ScannerView() {
   const [ipRange, setIpRange] = useState('192.168.1.1-254');
-  const [devices, setDevices] = useState<results.HostResult[]>([]);
+  const [devices, setDevices] = useState<results.DeviceInfo[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState<{time: string, msg: string}[]>([]);
-  const [sortCol, setSortCol] = useState<keyof results.HostResult | ''>('');
+  const [sortCol, setSortCol] = useState<keyof results.DeviceInfo | ''>('');
   const [sortAsc, setSortAsc] = useState(true);
   const logsEndRef = useRef<HTMLDivElement>(null);
+
+  // Detail panel state
+  const [selectedDevice, setSelectedDevice] = useState<results.DeviceInfo | null>(null);
+  const [pingStatus, setPingStatus] = useState<string>('');
+  const [reverseDnsStatus, setReverseDnsStatus] = useState<string>('');
+  const [portScanStatus, setPortScanStatus] = useState<string>('');
 
   const isValidIpRange = (value: string): boolean => {
     const cidrPattern = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/;
@@ -35,6 +41,7 @@ export function ScannerView() {
       setIsScanning(true);
       setDevices([]);
       setProgress(0);
+      setSelectedDevice(null);
       addLog("Scan started");
     });
     EventsOn("scan_finished", () => {
@@ -46,7 +53,7 @@ export function ScannerView() {
       setProgress(p);
     });
     EventsOn("scan_result", (host: any) => {
-      setDevices(prev => [...prev, new results.HostResult(host)]);
+      setDevices(prev => [...prev, new results.DeviceInfo(host)]);
     });
     return () => {
       EventsOff("scan_started");
@@ -69,7 +76,6 @@ export function ScannerView() {
   useEffect(() => {
     handleAutoDetect();
   }, []);
-
 
   const handleScan = async () => {
     if (isScanning) return;
@@ -102,12 +108,12 @@ export function ScannerView() {
     addLog("Stop signal sent");
   };
 
-  const handleSort = (col: keyof results.HostResult) => {
+  const handleSort = (col: keyof results.DeviceInfo) => {
     if (sortCol === col) setSortAsc(!sortAsc);
     else { setSortCol(col); setSortAsc(true); }
   };
 
-  const handleSortKeyDown = (e: KeyboardEvent<HTMLTableCellElement>, col: keyof results.HostResult) => {
+  const handleSortKeyDown = (e: KeyboardEvent<HTMLTableCellElement>, col: keyof results.DeviceInfo) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleSort(col);
@@ -130,15 +136,60 @@ export function ScannerView() {
   const handleExport = async () => {
     if (devices.length === 0) return;
     try {
-      const path = await ExportResults(devices);
+      // Cast list to correct format for binding wrapper
+      const path = await ExportResults(devices as any);
       if (path) addLog(`Exported results to: ${path}`);
     } catch (e) {
       addLog(`Failed to export: ${e}`);
     }
   };
 
+  const handleRowClick = (dev: results.DeviceInfo) => {
+    setSelectedDevice(dev);
+    setPingStatus('');
+    setReverseDnsStatus('');
+    setPortScanStatus('');
+  };
+
+  const handlePing = async (ip: string) => {
+    setPingStatus('Pinging...');
+    try {
+      const ok = await Ping(ip);
+      setPingStatus(ok ? 'Online (RTT < 1000ms)' : 'Offline/No Response');
+    } catch (e) {
+      setPingStatus(`Error: ${e}`);
+    }
+  };
+
+  const handleReverseDNS = async (ip: string) => {
+    setReverseDnsStatus('Querying...');
+    try {
+      const hostname = await ReverseDNS(ip);
+      setReverseDnsStatus(hostname || 'No record found');
+      if (hostname) {
+        setSelectedDevice(prev => prev ? { ...prev, hostname } : null);
+        setDevices(prev => prev.map(d => d.ip === ip ? { ...d, hostname } : d));
+      }
+    } catch (e) {
+      setReverseDnsStatus(`Error: ${e}`);
+    }
+  };
+
+  const handleScanPorts = async (ip: string) => {
+    setPortScanStatus('Scanning...');
+    try {
+      const ports = [21, 22, 23, 25, 53, 80, 110, 135, 139, 443, 445, 1433, 3306, 3389, 8080];
+      const openPorts = await ScanPorts(ip, ports);
+      setPortScanStatus(`Done. Found: ${openPorts.join(', ') || 'None'}`);
+      setSelectedDevice(prev => prev ? { ...prev, openPorts } : null);
+      setDevices(prev => prev.map(d => d.ip === ip ? { ...d, openPorts } : d));
+    } catch (e) {
+      setPortScanStatus(`Error: ${e}`);
+    }
+  };
+
   return (
-    <div className="scanner-view">
+    <div className="scanner-view" style={{ position: 'relative' }}>
       <div className="glass-panel header">
         <div className="header-title">
           <img src={nyanImg} alt="logo" style={{ height: '54px', width: '108px', objectFit: 'cover', objectPosition: 'center', marginRight: '8px', borderRadius: '6px', border: '1px solid rgba(102, 252, 241, 0.3)' }} />
@@ -200,33 +251,123 @@ export function ScannerView() {
               <th onClick={() => handleSort('ip')} onKeyDown={(e) => handleSortKeyDown(e, 'ip')} tabIndex={0}>
                 IP {sortCol === 'ip' && (sortAsc ? '▲' : '▼')}
               </th>
-              <th onClick={() => handleSort('open_ports')} onKeyDown={(e) => handleSortKeyDown(e, 'open_ports')} tabIndex={0}>
-                Ports {sortCol === 'open_ports' && (sortAsc ? '▲' : '▼')}
+              <th onClick={() => handleSort('openPorts')} onKeyDown={(e) => handleSortKeyDown(e, 'openPorts')} tabIndex={0}>
+                Ports {sortCol === 'openPorts' && (sortAsc ? '▲' : '▼')}
               </th>
               <th onClick={() => handleSort('mac')} onKeyDown={(e) => handleSortKeyDown(e, 'mac')} tabIndex={0}>
                 MAC {sortCol === 'mac' && (sortAsc ? '▲' : '▼')}
+              </th>
+              <th onClick={() => handleSort('vendor')} onKeyDown={(e) => handleSortKeyDown(e, 'vendor')} tabIndex={0}>
+                Vendor {sortCol === 'vendor' && (sortAsc ? '▲' : '▼')}
               </th>
             </tr>
           </thead>
           <tbody>
             {sortedDevices.map((dev, i) => (
-              <tr key={i}>
-                <td><span className={`status-dot ${dev.alive ? 'status-alive' : 'status-dead'}`} role="img" aria-label={dev.alive ? 'Device is online' : 'Device is offline'} title={dev.alive ? 'Online' : 'Offline'}></span></td>
+              <tr 
+                key={i} 
+                onClick={() => handleRowClick(dev)} 
+                style={{ cursor: 'pointer', background: selectedDevice?.ip === dev.ip ? 'rgba(102, 252, 241, 0.15)' : undefined }}
+              >
+                <td><span className={`status-dot ${dev.isAlive ? 'status-alive' : 'status-dead'}`} role="img" aria-label={dev.isAlive ? 'Device is online' : 'Device is offline'} title={dev.isAlive ? 'Online' : 'Offline'}></span></td>
                 <td>{dev.hostname || '--'}</td>
                 <td>{dev.ip}</td>
-                <td>{dev.open_ports?.join(', ') || 'None'}</td>
+                <td>{dev.openPorts?.join(', ') || 'None'}</td>
                 <td>{dev.mac || '--'}</td>
+                <td>{dev.vendor || '--'}</td>
               </tr>
             ))}
             {devices.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
                   {isScanning ? 'Scanning network...' : 'Ready to scan. Awaiting input.'}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Host Details Side Drawer */}
+      <div className={`glass-panel host-details-drawer ${selectedDevice ? 'open' : ''}`}>
+        {selectedDevice && (
+          <>
+            <div className="drawer-header">
+              <span className="drawer-title">Host Details</span>
+              <button className="drawer-close" onClick={() => setSelectedDevice(null)} title="Close Panel">
+                ✕
+              </button>
+            </div>
+            <div className="drawer-body">
+              <div className="detail-section">
+                <div className="detail-row">
+                  <span className="detail-label">IP Address</span>
+                  <span className="detail-value">{selectedDevice.ip}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Hostname</span>
+                  <span className="detail-value">{selectedDevice.hostname || '--'}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">MAC Address</span>
+                  <span className="detail-value">{selectedDevice.mac || '--'}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Vendor</span>
+                  <span className="detail-value">{selectedDevice.vendor || '--'}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">OS Heuristic</span>
+                  <span className="detail-value">{selectedDevice.os ? `${selectedDevice.os} (${selectedDevice.osFamily || 'unknown'})` : '--'}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Device Type</span>
+                  <span className="detail-value">{selectedDevice.deviceType || '--'}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="detail-label">Open Ports</span>
+                  <span className="detail-value">{selectedDevice.openPorts?.join(', ') || 'None'}</span>
+                </div>
+              </div>
+
+              <div className="detail-section">
+                <span className="drawer-title" style={{ fontSize: '13px', marginBottom: '8px' }}>Quick Actions</span>
+                <div className="quick-tools-grid">
+                  <button className="cyber-btn tool-btn" onClick={() => handlePing(selectedDevice.ip)}>
+                    Ping
+                  </button>
+                  <button className="cyber-btn tool-btn" onClick={() => handleReverseDNS(selectedDevice.ip)}>
+                    Reverse DNS
+                  </button>
+                  <button className="cyber-btn tool-btn" onClick={() => handleScanPorts(selectedDevice.ip)} style={{ gridColumn: 'span 2' }}>
+                    Scan Common Ports
+                  </button>
+                </div>
+              </div>
+
+              <div className="detail-section" style={{ marginTop: 'auto' }}>
+                {pingStatus && (
+                  <div className="detail-row">
+                    <span className="detail-label">Ping Status</span>
+                    <span className="detail-value">{pingStatus}</span>
+                  </div>
+                )}
+                {reverseDnsStatus && (
+                  <div className="detail-row">
+                    <span className="detail-label">DNS Record</span>
+                    <span className="detail-value">{reverseDnsStatus}</span>
+                  </div>
+                )}
+                {portScanStatus && (
+                  <div className="detail-row">
+                    <span className="detail-label">Port Scan</span>
+                    <span className="detail-value">{portScanStatus}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="glass-panel terminal-panel">
