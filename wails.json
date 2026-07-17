@@ -4,7 +4,7 @@
     "outputfilename":  "catnet-app",
     "info":  {
                  "productName":  "CatNet",
-                 "productVersion":  "0.4.0",
+                 "productVersion":  "0.5.0",
                  "productCompany":  "catnet-io",
                  "copyright":  "Copyright © 2026 Mendsec"
              },

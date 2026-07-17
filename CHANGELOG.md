@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-16
+
+### Added
+- **App**: Local persistence support copying `internal/store` (SQLite) and `internal/diff` comparator from engine.
+- **App**: Subdirectory `handlers/` grouping domain-specific logic.
+
+### Changed
+- **App**: Refactored `app.go` to delegate all actions to `handlers` package.
+- **App**: Upgraded Go directive to `1.26.4` and `engine` dependency to `v0.5.1`.
+- **App**: Moved `.archive-notice.md` to `docs/legacy-c-notice.md`.
+- **App**: Consolidated `CHANGES.md` into `CHANGELOG.md`.
+- **Security**: Removed duplicate input sanitization logic from `app.go` (now correctly delegated to `engine` profile sanitization).
+
 ## [0.4.1] - 2026-06-01
 
 ### Security
